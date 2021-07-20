@@ -15,7 +15,11 @@ type Network struct {
 // fetch Fetch packets from nodes in the network, and put them into given heap
 func (n *Network) fetch(packetHeap heap.Interface) {
 	for _, node := range n.nodes {
-		node.packets().Reduce(func(packet *SimulatedPacket) {
+		buffer := node.packets()
+		if buffer == nil {
+			continue
+		}
+		buffer.Reduce(func(packet *SimulatedPacket) {
 			heap.Push(packetHeap, packet)
 		})
 	}
