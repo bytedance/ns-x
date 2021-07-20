@@ -10,13 +10,13 @@ type PacketHandler func(packet *Packet, record *PacketQueue) (delayTime time.Dur
 
 // Channel indicates a simulated channel, with loss, delay and reorder
 type Channel struct {
-	*BasicNode
+	BasicNode
 	handlers []PacketHandler
 }
 
 func NewChannel(next Node, recordSize int, onEmitCallback OnEmitCallback, handlers []PacketHandler) *Channel {
 	return &Channel{
-		BasicNode: NewBasicNode(next, recordSize, onEmitCallback),
+		BasicNode: *NewBasicNode(next, recordSize, onEmitCallback),
 		handlers:  handlers,
 	}
 }

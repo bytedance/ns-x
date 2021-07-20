@@ -5,14 +5,14 @@ import "time"
 const preserveBufferSize = 10
 
 type Endpoint struct {
-	*BasicNode
+	BasicNode
 	concurrentBuffer *PacketBuffer
 	localBuffer      []*SimulatedPacket
 }
 
 func NewEndPoint() *Endpoint {
 	return &Endpoint{
-		BasicNode:        NewBasicNode(nil, 0, nil),
+		BasicNode:        BasicNode{},
 		concurrentBuffer: NewPackerBuffer(),
 		localBuffer:      make([]*SimulatedPacket, 0, preserveBufferSize),
 	}

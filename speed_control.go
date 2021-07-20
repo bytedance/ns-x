@@ -7,7 +7,7 @@ import (
 
 // SpeedController 模拟实际网卡收发能力的上限
 type SpeedController struct {
-	*BasicNode
+	BasicNode
 	ppsLimit float64
 	bpsLimit float64
 	emitTime time.Time
@@ -15,7 +15,7 @@ type SpeedController struct {
 
 func NewSpeedController(next Node, recordSize int, onEmitCallback OnEmitCallback, ppsLimit, bpsLimit float64) *SpeedController {
 	return &SpeedController{
-		BasicNode: NewBasicNode(next, recordSize, onEmitCallback),
+		BasicNode: *NewBasicNode(next, recordSize, onEmitCallback),
 		ppsLimit:  ppsLimit,
 		bpsLimit:  bpsLimit,
 		emitTime:  time.Now(),
