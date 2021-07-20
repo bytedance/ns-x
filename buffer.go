@@ -9,6 +9,12 @@ type PacketBuffer struct {
 	node *unsafe.Pointer
 }
 
+func NewPackerBuffer() *PacketBuffer {
+	return &PacketBuffer{
+		node: new(unsafe.Pointer),
+	}
+}
+
 type node struct {
 	next *node
 	data *SimulatedPacket

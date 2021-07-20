@@ -21,7 +21,7 @@ type BasicNode struct {
 func NewBasicNode(next Node, recordSize int, onEmitCallback OnEmitCallback) *BasicNode {
 	return &BasicNode{
 		next:           next,
-		buffer:         &PacketBuffer{},
+		buffer:         NewPackerBuffer(),
 		record:         NewPacketQueue(recordSize),
 		onEmitCallback: onEmitCallback,
 	}
