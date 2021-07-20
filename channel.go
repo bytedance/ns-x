@@ -8,6 +8,7 @@ import (
 // 返回值：delayTime: 经过该模块的延迟; isLoss: 是否丢包, True为丢包
 type PacketHandler func(packet *Packet, record *PacketQueue) (delayTime time.Duration, isLoss bool)
 
+// Channel indicates a simulated channel, with loss, delay and reorder
 type Channel struct {
 	*BasicNode
 	handlers []PacketHandler
@@ -28,7 +29,7 @@ func (c *Channel) Send(packet *Packet) {
 		}
 		t = t.Add(duration)
 	}
-	p := &SimulatedPacket{actual: packet, emitTime: t, sentTime: now, loss: loss}
+	p := &SimulatedPacket{Actual: packet, EmitTime: t, SentTime: now, Loss: loss}
 	c.buffer.Insert(p)
 	c.BasicNode.Send(p)
 }

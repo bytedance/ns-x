@@ -5,8 +5,6 @@ import (
 	"time"
 )
 
-type SpeedCalculator func(p float64, i float64, d float64) float64
-
 // SpeedController 模拟实际网卡收发能力的上限
 type SpeedController struct {
 	*BasicNode
@@ -21,7 +19,7 @@ func (s *SpeedController) Send(packet *Packet) {
 		s.emitTime = sentTime
 	}
 	emitTime := s.emitTime
-	p := &SimulatedPacket{actual: packet, emitTime: emitTime, sentTime: sentTime, loss: false, node: s}
+	p := &SimulatedPacket{Actual: packet, EmitTime: emitTime, SentTime: sentTime, Loss: false, Where: s}
 	s.buffer.Insert(p)
 	step := math.Max(1.0/s.ppsLimit, float64(len(packet.data))/s.bpsLimit)
 	s.emitTime = emitTime.Add(time.Duration(step*1000*1000) * time.Microsecond)

@@ -9,7 +9,7 @@ func (q *PacketHeap) IsEmpty() bool {
 }
 
 func (q *PacketHeap) Less(i, j int) bool {
-	return q.storage[i].emitTime.Before(q.storage[j].emitTime)
+	return q.storage[i].EmitTime.Before(q.storage[j].EmitTime)
 }
 
 func (q *PacketHeap) Len() int {
