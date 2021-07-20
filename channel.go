@@ -14,8 +14,11 @@ type Channel struct {
 	handlers []PacketHandler
 }
 
-func NewChannel() *Channel {
-	return &Channel{}
+func NewChannel(next Node, recordSize int, onEmitCallback OnEmitCallback, handlers []PacketHandler) *Channel {
+	return &Channel{
+		BasicNode: NewBasicNode(next, recordSize, onEmitCallback),
+		handlers:  handlers,
+	}
 }
 
 func (c *Channel) Send(packet *Packet) {

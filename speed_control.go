@@ -13,6 +13,15 @@ type SpeedController struct {
 	emitTime time.Time
 }
 
+func NewSpeedController(next Node, recordSize int, onEmitCallback OnEmitCallback, ppsLimit, bpsLimit float64) *SpeedController {
+	return &SpeedController{
+		BasicNode: NewBasicNode(next, recordSize, onEmitCallback),
+		ppsLimit:  ppsLimit,
+		bpsLimit:  bpsLimit,
+		emitTime:  time.Now(),
+	}
+}
+
 func (s *SpeedController) Send(packet *Packet) {
 	sentTime := time.Now()
 	if s.emitTime.Before(sentTime) {
