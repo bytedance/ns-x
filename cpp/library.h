@@ -1,12 +1,17 @@
 #ifndef CPP_LIBRARY_H
 #define CPP_LIBRARY_H
 
-#include <chrono>
+#ifdef __cplusplus
+
+#include "cstdint"
 
 extern "C" {
-long long now() {
-    return std::chrono::high_resolution_clock::now().time_since_epoch().count();
+#else
+#include "stdint.h"
+#endif
+int64_t now();
+#ifdef __cplusplus
 }
-}
+#endif
 
 #endif //CPP_LIBRARY_H
