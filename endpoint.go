@@ -1,7 +1,5 @@
 package networksimulator
 
-import "time"
-
 const preserveBufferSize = 10
 
 type Endpoint struct {
@@ -19,7 +17,7 @@ func NewEndPoint() *Endpoint {
 }
 
 func (e *Endpoint) Send(packet *Packet) {
-	t := time.Now()
+	t := Now()
 	p := &SimulatedPacket{
 		Actual:   packet,
 		SentTime: t,

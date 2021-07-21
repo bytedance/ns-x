@@ -3,7 +3,6 @@ package networksimulator
 import (
 	"container/heap"
 	"go.uber.org/atomic"
-	"time"
 )
 
 // Network Indicates a simulated network, which contains some simulated nodes
@@ -27,7 +26,7 @@ func (n *Network) fetch(packetHeap heap.Interface) {
 
 // drain Drain the given heap if possible, and emit the packets available
 func (n *Network) drain(packetHeap *PacketHeap) {
-	t := time.Now()
+	t := Now()
 	p := packetHeap.Peek()
 	for p != nil && t.Before(p.EmitTime) {
 		p.Where.emit(p)

@@ -9,7 +9,5 @@ import "C"
 import "time"
 
 func Now() time.Time {
-	t := int64(C.now())
-	println(t)
-	return time.Unix(0, t)
+	return time.Unix(0, int64(C.now()))
 }

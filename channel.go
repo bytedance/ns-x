@@ -22,7 +22,7 @@ func NewChannel(next Node, recordSize int, onEmitCallback OnEmitCallback, handle
 }
 
 func (c *Channel) Send(packet *Packet) {
-	now := time.Now()
+	now := Now()
 	t := now
 	loss := false
 	for _, h := range c.handlers {

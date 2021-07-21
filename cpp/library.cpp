@@ -3,9 +3,15 @@
 
 using namespace std::chrono;
 
-const auto offset = system_clock::now().time_since_epoch() - high_resolution_clock::now().time_since_epoch();
+constexpr auto AlignPeriod = seconds(1);
+auto lastSystemTime = system_clock::now();
+auto alignedTime = high_resolution_clock::now();
 
 int64_t now() {
-    auto t = high_resolution_clock::now() + offset;
-    return duration_cast<nanoseconds>(t.time_since_epoch()).count();
+    auto tick = high_resolution_clock::now();
+    if (tick - alignedTime > AlignPeriod) {
+        lastSystemTime = system_clock::now();
+        alignedTime = tick;
+    }
+    return duration_cast<nanoseconds>(tick - alignedTime + lastSystemTime.time_since_epoch()).count();
 }

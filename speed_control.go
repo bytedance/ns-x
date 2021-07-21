@@ -18,12 +18,12 @@ func NewSpeedController(next Node, recordSize int, onEmitCallback OnEmitCallback
 		BasicNode: *NewBasicNode(next, recordSize, onEmitCallback),
 		ppsLimit:  ppsLimit,
 		bpsLimit:  bpsLimit,
-		emitTime:  time.Now(),
+		emitTime:  Now(),
 	}
 }
 
 func (s *SpeedController) Send(packet *Packet) {
-	sentTime := time.Now()
+	sentTime := Now()
 	if s.emitTime.Before(sentTime) {
 		s.emitTime = sentTime
 	}
