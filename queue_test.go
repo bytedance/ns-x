@@ -16,12 +16,10 @@ func TestRecord1(t *testing.T) {
 		ring.Enqueue(packets[i])
 	}
 	assert.Equal(t, length, ring.Length())
-
 	for ring.Length() > 0 {
 		assert.Equal(t, packets[it], ring.Dequeue())
 		it++
 	}
-	//assert.Equal(t,123, "they should be equal")
 }
 
 func TestRecordOverflow(t *testing.T) {
