@@ -6,7 +6,10 @@ import (
 	"time"
 )
 
-// Restrict 模拟实际网卡收发能力的上限
+// Restrict simulate a node with limited ability
+// Once packets through a Restrict reaches the limit(in bps or pps), the later packets will be put in a buffer
+// Once the buffer overflow, later packets will be discarded
+// The the buffer limit will not be accurate, usually a little lower than specified, since it takes time(usually less than microseconds) to send packets
 type Restrict struct {
 	BasicNode
 	ppsLimit, bpsLimit                float64

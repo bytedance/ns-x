@@ -8,6 +8,7 @@ import (
 // 返回值：delayTime: 经过该模块的延迟; isLoss: 是否丢包, True为丢包
 type PacketHandler func(packet *Packet, record *PacketQueue) (time.Duration, bool)
 
+// Combine the given handlers, the result will add up all the delay time and loss
 func Combine(handlers ...PacketHandler) PacketHandler {
 	return func(packet *Packet, record *PacketQueue) (time.Duration, bool) {
 		delay := time.Duration(0)
@@ -27,6 +28,7 @@ type Channel struct {
 	handler PacketHandler
 }
 
+// NewChannel creates a new channel
 func NewChannel(next Node, recordSize int, onEmitCallback OnEmitCallback, handler PacketHandler) *Channel {
 	return &Channel{
 		BasicNode: *NewBasicNode(next, recordSize, onEmitCallback),
