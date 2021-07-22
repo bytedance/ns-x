@@ -5,16 +5,16 @@ import (
 	"time"
 )
 
-// SpeedController 模拟实际网卡收发能力的上限
-type SpeedController struct {
+// Restrict 模拟实际网卡收发能力的上限
+type Restrict struct {
 	BasicNode
 	ppsLimit float64
 	bpsLimit float64
 	emitTime time.Time
 }
 
-func NewSpeedController(next Node, recordSize int, onEmitCallback OnEmitCallback, ppsLimit, bpsLimit float64) *SpeedController {
-	return &SpeedController{
+func NewRestrict(next Node, recordSize int, onEmitCallback OnEmitCallback, ppsLimit, bpsLimit float64) *Restrict {
+	return &Restrict{
 		BasicNode: *NewBasicNode(next, recordSize, onEmitCallback),
 		ppsLimit:  ppsLimit,
 		bpsLimit:  bpsLimit,
@@ -22,7 +22,7 @@ func NewSpeedController(next Node, recordSize int, onEmitCallback OnEmitCallback
 	}
 }
 
-func (s *SpeedController) Send(packet *Packet) {
+func (s *Restrict) Send(packet *Packet) {
 	sentTime := Now()
 	if s.emitTime.Before(sentTime) {
 		s.emitTime = sentTime
