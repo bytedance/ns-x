@@ -6,33 +6,44 @@ import (
 
 // PacketHandler 定义了网损模块
 // 返回值：delayTime: 经过该模块的延迟; isLoss: 是否丢包, True为丢包
-type PacketHandler func(packet *Packet, record *PacketQueue) (delayTime time.Duration, isLoss bool)
+type PacketHandler func(packet *Packet, record *PacketQueue) (time.Duration, bool)
+
+func Combine(handlers ...PacketHandler) PacketHandler {
+	return func(packet *Packet, record *PacketQueue) (time.Duration, bool) {
+		delay := time.Duration(0)
+		loss := false
+		for _, handler := range handlers {
+			d, l := handler(packet, record)
+			delay += d
+			loss = l || loss
+		}
+		return delay, loss
+	}
+}
 
 // Channel indicates a simulated channel, with loss, delay and reorder
 type Channel struct {
 	BasicNode
-	handlers []PacketHandler
+	handler PacketHandler
 }
 
-func NewChannel(next Node, recordSize int, onEmitCallback OnEmitCallback, handlers []PacketHandler) *Channel {
+func NewChannel(next Node, recordSize int, onEmitCallback OnEmitCallback, handler PacketHandler) *Channel {
 	return &Channel{
 		BasicNode: *NewBasicNode(next, recordSize, onEmitCallback),
-		handlers:  handlers,
+		handler:   handler,
 	}
 }
 
 func (c *Channel) Send(packet *Packet) {
 	now := Now()
 	t := now
-	loss := false
-	for _, h := range c.handlers {
-		duration, l := h(packet, c.record)
-		if l {
-			loss = true
-		}
-		t = t.Add(duration)
+	l := false
+	if c.handler != nil {
+		delay, loss := c.handler(packet, c.record)
+		t = t.Add(delay)
+		l = l || loss
 	}
-	p := &SimulatedPacket{Actual: packet, EmitTime: t, SentTime: now, Loss: loss}
+	p := &SimulatedPacket{Actual: packet, EmitTime: t, SentTime: now, Loss: l}
 	c.buffer.Insert(p)
 	c.BasicNode.Send(p)
 }
