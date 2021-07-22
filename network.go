@@ -36,7 +36,9 @@ func (n *Network) drain(packetHeap *PacketHeap) {
 
 // mainLoop Main polling loop of network
 func (n *Network) mainLoop() {
-	n.running.Store(true)
+	if !n.running.CAS(false, true) {
+		return
+	}
 	packetHeap := &PacketHeap{}
 	for n.running.Load() {
 		n.fetch(packetHeap)
