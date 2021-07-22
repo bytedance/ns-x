@@ -1,6 +1,7 @@
 package networksimulator
 
 import (
+	"go.uber.org/atomic"
 	"math"
 	"time"
 )
@@ -8,29 +9,51 @@ import (
 // Restrict 模拟实际网卡收发能力的上限
 type Restrict struct {
 	BasicNode
-	ppsLimit float64
-	bpsLimit float64
-	emitTime time.Time
+	ppsLimit, bpsLimit                float64
+	bufferSizeLimit, bufferCountLimit uint64
+	bufferSize, bufferCount           *atomic.Uint64
+	emitTime                          time.Time
 }
 
-func NewRestrict(next Node, recordSize int, onEmitCallback OnEmitCallback, ppsLimit, bpsLimit float64) *Restrict {
+// NewRestrict create a new restrict with the given parameter
+// next, recordSize, onEmitCallback the same as BasicNode
+// ppsLimit, bpsLimit: the limit of packets per second/bytes per second
+// bufferSizeLimit, bufferCountLimit: the limit of waiting packets, in bytes/packets
+func NewRestrict(next Node, recordSize int, onEmitCallback OnEmitCallback,
+	ppsLimit, bpsLimit float64,
+	bufferSizeLimit, bufferCountLimit uint64) *Restrict {
 	return &Restrict{
-		BasicNode: *NewBasicNode(next, recordSize, onEmitCallback),
-		ppsLimit:  ppsLimit,
-		bpsLimit:  bpsLimit,
-		emitTime:  Now(),
+		BasicNode:        *NewBasicNode(next, recordSize, onEmitCallback),
+		ppsLimit:         ppsLimit,
+		bpsLimit:         bpsLimit,
+		bufferSizeLimit:  bufferSizeLimit,
+		bufferCountLimit: bufferCountLimit,
+		bufferSize:       atomic.NewUint64(0),
+		bufferCount:      atomic.NewUint64(0),
+		emitTime:         Now(),
 	}
 }
 
-func (s *Restrict) Send(packet *Packet) {
-	sentTime := Now()
-	if s.emitTime.Before(sentTime) {
-		s.emitTime = sentTime
+func (r *Restrict) emit(packet *SimulatedPacket) {
+	r.BasicNode.emit(packet)
+	r.bufferSize.Sub(uint64(len(packet.Actual.data)))
+	r.bufferCount.Dec()
+}
+
+func (r *Restrict) Send(packet *Packet) {
+	if r.bufferSize.Load() >= r.bufferSizeLimit || r.bufferCount.Load() >= r.bufferCountLimit {
+		return
 	}
-	emitTime := s.emitTime
-	p := &SimulatedPacket{Actual: packet, EmitTime: emitTime, SentTime: sentTime, Loss: false, Where: s}
-	s.buffer.Insert(p)
-	step := math.Max(1.0/s.ppsLimit, float64(len(packet.data))/s.bpsLimit)
-	s.emitTime = emitTime.Add(time.Duration(step*1000*1000) * time.Microsecond)
-	s.BasicNode.Send(p)
+	sentTime := Now()
+	if r.emitTime.Before(sentTime) {
+		r.emitTime = sentTime
+	}
+	emitTime := r.emitTime
+	p := &SimulatedPacket{Actual: packet, EmitTime: emitTime, SentTime: sentTime, Loss: false, Where: r}
+	r.buffer.Insert(p)
+	step := math.Max(1.0/r.ppsLimit, float64(len(packet.data))/r.bpsLimit)
+	r.emitTime = emitTime.Add(time.Duration(step*1000*1000) * time.Microsecond)
+	r.bufferSize.Add(uint64(len(packet.data)))
+	r.bufferCount.Inc()
+	r.BasicNode.Send(p)
 }
