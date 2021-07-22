@@ -35,6 +35,9 @@ func (q *PacketQueue) Enqueue(packet *SimulatedPacket) {
 	if q.head == q.tail {
 		q.head++
 	}
+	if q.head >= q.length {
+		q.head = 0
+	}
 }
 
 func (q *PacketQueue) Dequeue() *SimulatedPacket {
