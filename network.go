@@ -8,7 +8,11 @@ import (
 // Network Indicates a simulated network, which contains some simulated nodes
 type Network struct {
 	nodes   []Node
-	running atomic.Bool
+	running *atomic.Bool
+}
+
+func NewNetwork(nodes []Node) *Network {
+	return &Network{nodes: nodes, running: atomic.NewBool(false)}
 }
 
 // fetch Fetch packets from nodes in the network, and put them into given heap
@@ -27,8 +31,11 @@ func (n *Network) fetch(packetHeap heap.Interface) {
 // drain Drain the given heap if possible, and emit the packets available
 func (n *Network) drain(packetHeap *PacketHeap) {
 	t := Now()
-	p := packetHeap.Peek()
-	for p != nil && t.Before(p.EmitTime) {
+	for !packetHeap.IsEmpty() {
+		p := packetHeap.Peek()
+		if p.EmitTime.After(t) {
+			break
+		}
 		p.Where.emit(p)
 		heap.Pop(packetHeap)
 	}
@@ -39,6 +46,7 @@ func (n *Network) mainLoop() {
 	if !n.running.CAS(false, true) {
 		return
 	}
+	println("network main loop start")
 	packetHeap := &PacketHeap{}
 	for n.running.Load() {
 		n.fetch(packetHeap)
@@ -47,6 +55,7 @@ func (n *Network) mainLoop() {
 	for !packetHeap.IsEmpty() {
 		n.drain(packetHeap)
 	}
+	println("network main loop end")
 }
 
 // Start the network to enable packet transmission

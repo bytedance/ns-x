@@ -45,7 +45,7 @@ func (c *Channel) Send(packet *Packet) {
 		t = t.Add(delay)
 		l = l || loss
 	}
-	p := &SimulatedPacket{Actual: packet, EmitTime: t, SentTime: now, Loss: l}
+	p := &SimulatedPacket{Actual: packet, EmitTime: t, SentTime: now, Loss: l, Where: c}
 	c.buffer.Insert(p)
 	c.BasicNode.Send(p)
 }
