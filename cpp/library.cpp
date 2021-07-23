@@ -3,7 +3,7 @@
 
 using namespace std::chrono;
 
-constexpr auto AlignPeriod = seconds(1);
+constexpr auto AlignPeriod = milliseconds(50);
 auto lastSystemTime = system_clock::now();
 auto alignedTime = high_resolution_clock::now();
 

@@ -7,8 +7,10 @@ import (
 )
 
 func TestTime(t *testing.T) {
-	testTime := Now()
-	assert.LessOrEqual(t, time.Since(testTime), time.Second)
+	for i := 0; i < 1000; i++ {
+		testTime := Now()
+		assert.LessOrEqual(t, time.Since(testTime), time.Microsecond*50)
+	}
 }
 
 func BenchmarkTime(b *testing.B) {
