@@ -2,6 +2,8 @@ package networksimulator
 
 import (
 	"net"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -18,4 +20,18 @@ type SimulatedPacket struct {
 	SentTime time.Time // when this packet is sent (Where send a packet means the packet enters the Where, waiting to emit)
 	Loss     bool      // whether this packet is lost
 	Where    Node      // where is the packet
+}
+
+func (packet *SimulatedPacket) String() string {
+	builder := strings.Builder{}
+	builder.WriteString("sent time: ")
+	builder.WriteString(packet.SentTime.String())
+	builder.WriteRune('\n')
+	builder.WriteString("emit time: ")
+	builder.WriteString(packet.EmitTime.String())
+	builder.WriteRune('\n')
+	builder.WriteString("loss: ")
+	builder.WriteString(strconv.FormatBool(packet.Loss))
+	builder.WriteRune('\n')
+	return builder.String()
 }
