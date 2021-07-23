@@ -8,7 +8,7 @@ type Endpoint struct {
 	localBuffer      []*SimulatedPacket
 }
 
-func NewEndPoint() *Endpoint {
+func NewEndpoint() *Endpoint {
 	return &Endpoint{
 		BasicNode:        BasicNode{},
 		concurrentBuffer: NewPackerBuffer(),
