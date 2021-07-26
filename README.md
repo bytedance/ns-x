@@ -35,3 +35,10 @@ The loop is separated into two parts: fetch and drain.
 * drain: The main loop drain the heap until the heap only contains packets with emit time after the current time.
 
 By now, the main loop lock a single os thread, but in the future, the main loop may run on a fork join pool.
+
+#### High Resolution Time
+
+Since the main loop need to access current time with high resolution as well as low cost, the standard time library of go is not enough. (internal system call, accurate but with high cost, update not timely)
+
+Currently, high resolution time is a wrapper of C++ time library. The core design is use system time and steady time together. The system time means time retrieved through system call, while the steady time is usually a counter of CPU cycles. The system time is accurate but with lower resolution and higher cost, the steady time is not so accurate (due to turbo of CPU) but with highest resolution in theory. Once trying to fetch the time, it's checked whether enough time has passed by since the last alignment. If so, an align will be performed immediately. The align operation itself is thread safe by a lock, but another double check will guarantee low cost.
+
