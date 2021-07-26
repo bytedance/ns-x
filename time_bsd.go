@@ -1,4 +1,4 @@
-// +build cgo,!time_compiled,darwin cgo,!time_compiled,freebsd cgo,!time_compiled,dragonfly
+// +build cgo,!time_compiled,darwin,amd64 cgo,!time_compiled,freebsd,amd64 cgo,!time_compiled,dragonfly,amd64
 
 package networksimulator
 

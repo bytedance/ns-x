@@ -1,4 +1,4 @@
-// +build cgo,!time_compiled,windows
+// +build cgo,!time_compiled,windows,amd64
 
 package networksimulator
 
