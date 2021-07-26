@@ -3,6 +3,7 @@ package core
 import (
 	"container/heap"
 	"go.uber.org/atomic"
+	"runtime"
 )
 
 // Network Indicates a simulated network, which contains some simulated nodes
@@ -47,6 +48,8 @@ func (n *Network) mainLoop() {
 		return
 	}
 	println("network main loop start")
+	runtime.LockOSThread()
+	defer runtime.UnlockOSThread()
 	packetHeap := &PacketHeap{}
 	for n.running.Load() {
 		n.fetch(packetHeap)
