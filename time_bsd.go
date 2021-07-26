@@ -1,10 +1,10 @@
-// +build cgo,time_compiled
+// +build cgo,!time_compiled,darwin cgo,!time_compiled,freebsd cgo,!time_compiled,dragonfly
 
 package networksimulator
 
 /*
 #cgo CFLAGS: -I${SRCDIR}/cpp
-#cgo LDFLAGS: -L${SRCDIR}/cpp -ltime -lstdc++
+#cgo LDFLAGS: -L${SRCDIR}/binary/darwin -ltime -lstdc++
 #include "cpp/library.h"
 */
 import "C"

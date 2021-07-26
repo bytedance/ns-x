@@ -1,10 +1,10 @@
-// +build cgo,time_compiled
+// +build cgo,!time_compiled,windows
 
 package networksimulator
 
 /*
 #cgo CFLAGS: -I${SRCDIR}/cpp
-#cgo LDFLAGS: -L${SRCDIR}/cpp -ltime -lstdc++
+#cgo LDFLAGS: -L${SRCDIR}/binary/windows -ltime -lstdc++
 #include "cpp/library.h"
 */
 import "C"
