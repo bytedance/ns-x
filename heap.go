@@ -1,4 +1,4 @@
-package core
+package networksimulator
 
 type PacketHeap struct {
 	storage []*SimulatedPacket

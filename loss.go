@@ -1,8 +1,7 @@
-package node
+package networksimulator
 
 import (
 	"math/rand"
-	"network-simulator/core"
 	"time"
 )
 
@@ -27,7 +26,7 @@ func (nl *NoneLoss) Loss() bool {
 	return false
 }
 
-func (nl *NoneLoss) PacketHandler(*core.Packet, *core.PacketQueue) (time.Duration, bool) {
+func (nl *NoneLoss) PacketHandler(*Packet, *PacketQueue) (time.Duration, bool) {
 	return 0, nl.Loss()
 }
 
@@ -51,7 +50,7 @@ func (rl *RandomLoss) Loss() bool {
 	return rl.random.Float64() < rl.possibility
 }
 
-func (rl *RandomLoss) PacketHandler(*core.Packet, *core.PacketQueue) (time.Duration, bool) {
+func (rl *RandomLoss) PacketHandler(*Packet, *PacketQueue) (time.Duration, bool) {
 	return 0, rl.Loss()
 }
 
@@ -89,6 +88,6 @@ func (gl *GilbertLoss) Loss() bool {
 	return gl.random.Float64() < gl.s2Loss
 }
 
-func (gl *GilbertLoss) PacketHandler(*core.Packet, *core.PacketQueue) (time.Duration, bool) {
+func (gl *GilbertLoss) PacketHandler(*Packet, *PacketQueue) (time.Duration, bool) {
 	return 0, gl.Loss()
 }

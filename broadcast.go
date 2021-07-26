@@ -1,20 +1,18 @@
-package node
-
-import "network-simulator/core"
+package networksimulator
 
 type Broadcast struct {
 	BasicNode
-	nodes []core.Node
+	nodes []Node
 }
 
-func NewBroadcast(nodes []core.Node, callback core.OnEmitCallback) *Broadcast {
+func NewBroadcast(nodes []Node, callback OnEmitCallback) *Broadcast {
 	return &Broadcast{
 		BasicNode: *NewBasicNode(nil, 0, callback),
 		nodes:     nodes,
 	}
 }
 
-func (b *Broadcast) Emit(packet *core.SimulatedPacket) {
+func (b *Broadcast) Emit(packet *SimulatedPacket) {
 	for _, n := range b.nodes {
 		n.Send(packet.Actual)
 	}

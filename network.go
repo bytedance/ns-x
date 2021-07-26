@@ -1,4 +1,4 @@
-package core
+package networksimulator
 
 import (
 	"container/heap"

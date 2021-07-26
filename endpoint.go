@@ -1,29 +1,25 @@
-package node
-
-import (
-	"network-simulator/core"
-)
+package networksimulator
 
 const preserveBufferSize = 10
 
 // Endpoint is a node to receive Packets, Packets reach an endpoint will no longer transmit
 type Endpoint struct {
 	BasicNode
-	concurrentBuffer *core.PacketBuffer
-	localBuffer      []*core.SimulatedPacket
+	concurrentBuffer *PacketBuffer
+	localBuffer      []*SimulatedPacket
 }
 
 func NewEndpoint() *Endpoint {
 	return &Endpoint{
 		BasicNode:        BasicNode{},
-		concurrentBuffer: core.NewPackerBuffer(),
-		localBuffer:      make([]*core.SimulatedPacket, 0, preserveBufferSize),
+		concurrentBuffer: NewPackerBuffer(),
+		localBuffer:      make([]*SimulatedPacket, 0, preserveBufferSize),
 	}
 }
 
-func (e *Endpoint) Send(packet *core.Packet) {
-	t := core.Now()
-	p := &core.SimulatedPacket{
+func (e *Endpoint) Send(packet *Packet) {
+	t := Now()
+	p := &SimulatedPacket{
 		Actual:   packet,
 		SentTime: t,
 		EmitTime: t,
@@ -33,9 +29,9 @@ func (e *Endpoint) Send(packet *core.Packet) {
 	e.concurrentBuffer.Insert(p)
 }
 
-func (e *Endpoint) Receive() *core.SimulatedPacket {
+func (e *Endpoint) Receive() *SimulatedPacket {
 	if len(e.localBuffer) == 0 {
-		e.concurrentBuffer.Reduce(func(packet *core.SimulatedPacket) {
+		e.concurrentBuffer.Reduce(func(packet *SimulatedPacket) {
 			e.localBuffer = append(e.localBuffer, packet)
 		})
 	}

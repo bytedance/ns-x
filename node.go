@@ -1,4 +1,4 @@
-package core
+package networksimulator
 
 // Node Indicates a simulated node in the network
 type Node interface {
