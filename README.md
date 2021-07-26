@@ -23,6 +23,35 @@ Some widely used math models are already pre-defined:
 * Restrict: A restrict node block following packets when reach the restrict, and drop following packets once the internal buffer overflow.
 * Scatter: A scatter node transfer packets of a source to one of its targets selected by a user-defined rule.
 
+### Usage
+
+#### Install
+
+The installation only requires to add it into go.mod.
+
+The project use cgo to implement high resolution time, by default, binary for windows, linux and bsd with amd64 are prebuilt.
+
+#### Example
+
+```go
+```
+
+
+
+#### Compile
+
+The build environment tested is go v1.16.5, with cmake v3.21.0, clang v12.0.5 and C++ 11.
+
+The project use cgo to implement high resolution time, to compile it, goto core/cpp and use cmake to build.
+
+```bash
+cd core/cpp
+cmake CMakeLists.txt
+make
+```
+
+This should generate a file named $libtime.a$ under the cpp directory.
+
 ### Design
 
 #### Main Loop
