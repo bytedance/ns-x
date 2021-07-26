@@ -24,13 +24,13 @@ type SimulatedPacket struct {
 
 func (packet *SimulatedPacket) String() string {
 	builder := strings.Builder{}
-	builder.WriteString("sent time: ")
+	builder.WriteString("Sent time: ")
 	builder.WriteString(packet.SentTime.String())
 	builder.WriteRune('\n')
 	builder.WriteString("Emit time: ")
 	builder.WriteString(packet.EmitTime.String())
 	builder.WriteRune('\n')
-	builder.WriteString("loss: ")
+	builder.WriteString("Loss: ")
 	builder.WriteString(strconv.FormatBool(packet.Loss))
 	builder.WriteRune('\n')
 	return builder.String()
