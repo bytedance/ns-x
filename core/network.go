@@ -1,4 +1,4 @@
-package networksimulator
+package core
 
 import (
 	"container/heap"
@@ -15,10 +15,10 @@ func NewNetwork(nodes []Node) *Network {
 	return &Network{nodes: nodes, running: atomic.NewBool(false)}
 }
 
-// fetch Fetch packets from nodes in the network, and put them into given heap
+// fetch Fetch Packets from nodes in the network, and put them into given heap
 func (n *Network) fetch(packetHeap heap.Interface) {
 	for _, node := range n.nodes {
-		buffer := node.packets()
+		buffer := node.Packets()
 		if buffer == nil {
 			continue
 		}
@@ -28,7 +28,7 @@ func (n *Network) fetch(packetHeap heap.Interface) {
 	}
 }
 
-// drain Drain the given heap if possible, and emit the packets available
+// drain Drain the given heap if possible, and Emit the Packets available
 func (n *Network) drain(packetHeap *PacketHeap) {
 	t := Now()
 	for !packetHeap.IsEmpty() {
@@ -36,7 +36,7 @@ func (n *Network) drain(packetHeap *PacketHeap) {
 		if p.EmitTime.After(t) {
 			break
 		}
-		p.Where.emit(p)
+		p.Where.Emit(p)
 		heap.Pop(packetHeap)
 	}
 }

@@ -1,15 +1,16 @@
-package networksimulator
+package node
 
 import (
 	"go.uber.org/atomic"
 	"math"
+	"network-simulator/core"
 	"time"
 )
 
 // Restrict simulate a node with limited ability
-// Once packets through a Restrict reaches the limit(in bps or pps), the later packets will be put in a buffer
-// Once the buffer overflow, later packets will be discarded
-// The the buffer limit will not be accurate, usually a little lower than specified, since it takes time(usually less than microseconds) to send packets
+// Once Packets through a Restrict reaches the limit(in bps or pps), the later Packets will be put in a buffer
+// Once the buffer overflow, later Packets will be discarded
+// The the buffer limit will not be accurate, usually a little lower than specified, since it takes time(usually less than microseconds) to send Packets
 type Restrict struct {
 	BasicNode
 	ppsLimit, bpsLimit                float64
@@ -20,9 +21,9 @@ type Restrict struct {
 
 // NewRestrict create a new restrict with the given parameter
 // next, recordSize, onEmitCallback the same as BasicNode
-// ppsLimit, bpsLimit: the limit of packets per second/bytes per second
-// bufferSizeLimit, bufferCountLimit: the limit of waiting packets, in bytes/packets
-func NewRestrict(next Node, recordSize int, onEmitCallback OnEmitCallback,
+// ppsLimit, bpsLimit: the limit of Packets per second/bytes per second
+// bufferSizeLimit, bufferCountLimit: the limit of waiting Packets, in bytes/Packets
+func NewRestrict(next core.Node, recordSize int, onEmitCallback core.OnEmitCallback,
 	ppsLimit, bpsLimit float64,
 	bufferSizeLimit, bufferCountLimit uint64) *Restrict {
 	return &Restrict{
@@ -33,30 +34,30 @@ func NewRestrict(next Node, recordSize int, onEmitCallback OnEmitCallback,
 		bufferCountLimit: bufferCountLimit,
 		bufferSize:       atomic.NewUint64(0),
 		bufferCount:      atomic.NewUint64(0),
-		emitTime:         Now(),
+		emitTime:         core.Now(),
 	}
 }
 
-func (r *Restrict) emit(packet *SimulatedPacket) {
-	r.BasicNode.emit(packet)
-	r.bufferSize.Sub(uint64(len(packet.Actual.data)))
+func (r *Restrict) Emit(packet *core.SimulatedPacket) {
+	r.BasicNode.Emit(packet)
+	r.bufferSize.Sub(uint64(len(packet.Actual.Data)))
 	r.bufferCount.Dec()
 }
 
-func (r *Restrict) Send(packet *Packet) {
+func (r *Restrict) Send(packet *core.Packet) {
 	if r.bufferSize.Load() >= r.bufferSizeLimit || r.bufferCount.Load() >= r.bufferCountLimit {
 		return
 	}
-	sentTime := Now()
+	sentTime := core.Now()
 	if r.emitTime.Before(sentTime) {
 		r.emitTime = sentTime
 	}
 	emitTime := r.emitTime
-	p := &SimulatedPacket{Actual: packet, EmitTime: emitTime, SentTime: sentTime, Loss: false, Where: r}
+	p := &core.SimulatedPacket{Actual: packet, EmitTime: emitTime, SentTime: sentTime, Loss: false, Where: r}
 	r.buffer.Insert(p)
-	step := math.Max(1.0/r.ppsLimit, float64(len(packet.data))/r.bpsLimit)
+	step := math.Max(1.0/r.ppsLimit, float64(len(packet.Data))/r.bpsLimit)
 	r.emitTime = emitTime.Add(time.Duration(step*1000*1000) * time.Microsecond)
-	r.bufferSize.Add(uint64(len(packet.data)))
+	r.bufferSize.Add(uint64(len(packet.Data)))
 	r.bufferCount.Inc()
-	r.BasicNode.Send(p)
+	r.BasicNode.OnSend(p)
 }

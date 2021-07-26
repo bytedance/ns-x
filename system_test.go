@@ -2,24 +2,26 @@ package networksimulator
 
 import (
 	"math/rand"
+	"network-simulator/core"
+	"network-simulator/node"
 	"testing"
 )
 
 func TestBasic(t *testing.T) {
-	endpoint := NewEndPoint()
+	endpoint := node.NewEndpoint()
 	source := rand.NewSource(0)
 	random := rand.New(source)
-	l := NewRandomLoss(0.32, random)
-	n := NewChannel(endpoint, 0, func(packet *SimulatedPacket) {
-		println("emit packet ", packet.String())
+	l := node.NewRandomLoss(0.32, random)
+	n := node.NewChannel(endpoint, 0, func(packet *core.SimulatedPacket) {
+		println("Emit packet ", packet.String())
 	}, l)
-	nodes := []Node{endpoint, n}
-	network := NewNetwork(nodes)
+	nodes := []core.Node{endpoint, n}
+	network := core.NewNetwork(nodes)
 	network.Start()
 	defer network.Stop()
-	n.Send(&Packet{[]byte{0x01, 0x02}, nil})
-	n.Send(&Packet{[]byte{0x02, 0x03}, nil})
-	n.Send(&Packet{[]byte{0x03, 0x04}, nil})
+	n.Send(&core.Packet{Data: []byte{0x01, 0x02}})
+	n.Send(&core.Packet{Data: []byte{0x02, 0x03}})
+	n.Send(&core.Packet{Data: []byte{0x03, 0x04}})
 	for {
 		packet := endpoint.Receive()
 		if packet != nil {

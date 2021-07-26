@@ -1,7 +1,8 @@
-package networksimulator
+package node
 
 import (
 	"math/rand"
+	"network-simulator/core"
 	"time"
 )
 
@@ -53,7 +54,7 @@ func (nd *FixedDelay) Delay() time.Duration {
 	return nd.Average() + nd.Jitter()
 }
 
-func (nd *FixedDelay) PacketHandler(*Packet, *PacketQueue) (time.Duration, bool) {
+func (nd *FixedDelay) PacketHandler(*core.Packet, *core.PacketQueue) (time.Duration, bool) {
 	return nd.Delay(), false
 }
 
@@ -82,7 +83,7 @@ func (nd *NormalDelay) Delay() time.Duration {
 	return time.Duration(nd.random.NormFloat64()*sigma)*time.Microsecond + nd.Average() + nd.Jitter()
 }
 
-func (nd *NormalDelay) PacketHandler(*Packet, *PacketQueue) (time.Duration, bool) {
+func (nd *NormalDelay) PacketHandler(*core.Packet, *core.PacketQueue) (time.Duration, bool) {
 	return nd.Delay(), false
 }
 
@@ -109,6 +110,6 @@ func (ud *UniformDelay) Delay() time.Duration {
 	return time.Duration(ud.random.Float64()*average*2)*time.Microsecond + ud.Jitter()
 }
 
-func (ud *UniformDelay) PacketHandler(*Packet, *PacketQueue) (time.Duration, bool) {
+func (ud *UniformDelay) PacketHandler(*core.Packet, *core.PacketQueue) (time.Duration, bool) {
 	return ud.Delay(), false
 }

@@ -1,4 +1,4 @@
-package networksimulator
+package core
 
 import (
 	"go.uber.org/atomic"

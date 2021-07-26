@@ -1,6 +1,8 @@
-package networksimulator
+package core
 
-import "errors"
+import (
+	"errors"
+)
 
 var errEmptyRecord = errors.New("record is empty")
 var errOverflow = errors.New("index is overflow")

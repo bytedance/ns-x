@@ -1,4 +1,4 @@
-package networksimulator
+package core
 
 /*
 #cgo CFLAGS: -I${SRCDIR}/cpp

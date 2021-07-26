@@ -1,7 +1,8 @@
-package networksimulator
+package node
 
 import (
 	"math/rand"
+	"network-simulator/core"
 	"time"
 )
 
@@ -26,7 +27,7 @@ func (nr *NoneReorder) Reorder() time.Duration {
 	return 0
 }
 
-func (nr *NoneReorder) PacketHandler(*Packet, *PacketQueue) (time.Duration, bool) {
+func (nr *NoneReorder) PacketHandler(*core.Packet, *core.PacketQueue) (time.Duration, bool) {
 	return nr.Reorder(), false
 }
 
@@ -69,7 +70,7 @@ func (nr *NormalReorder) Reorder() time.Duration {
 	return 0
 }
 
-func (nr *NormalReorder) PacketHandler(*Packet, *PacketQueue) (time.Duration, bool) {
+func (nr *NormalReorder) PacketHandler(*core.Packet, *core.PacketQueue) (time.Duration, bool) {
 	return nr.Reorder(), false
 }
 
@@ -121,6 +122,6 @@ func (gr *GapReorder) Reorder() time.Duration {
 	return 0
 }
 
-func (gr *GapReorder) PacketHandler(*Packet, *PacketQueue) (time.Duration, bool) {
+func (gr *GapReorder) PacketHandler(*core.Packet, *core.PacketQueue) (time.Duration, bool) {
 	return gr.Reorder(), false
 }
