@@ -1,4 +1,12 @@
-## network simulator
+# Network Simulator
+
+Network Simulator is designed as an easy-to-use, flexible library to simulate internet, written mainly in go.
+
+### Feature
+
+* Flexible to construct any network graph with customizable node at any scale
+* Ability to collect any data from any node in the network graph
+* Cross platform, can be used on any platform / architecture supports go and C++
 
 ### Introduction
 
@@ -29,16 +37,45 @@ Some widely used math models are already pre-defined:
 
 The installation only requires to add it into go.mod.
 
-The project use cgo to implement high resolution time, by default, binary for windows, linux and bsd with amd64 are prebuilt.
+The project use cgo to implement high resolution time, by default, binary for windows, linux and bsd with amd64 are prebuilt, other platforms or architectures need to compile it by self. (See the <a href = "#compile">compile</a> section)
 
 #### Example
 
+Following is an example of send packets through a simulated channel, with packet loss posibility of $32\%$​.
+
 ```go
+package main
+
+import (
+	"math/rand"
+	"network-simulator"
+)
+
+func main() {
+	endpoint := networksimulator.NewEndpoint()
+	source := rand.NewSource(0)
+	random := rand.New(source)
+	l := networksimulator.NewRandomLoss(0.32, random)
+	n := networksimulator.NewChannel(endpoint, 0, func(packet *networksimulator.SimulatedPacket) {
+		println("Emit packet ", packet.String())
+	}, l)
+	nodes := []networksimulator.Node{endpoint, n}
+	network := networksimulator.NewNetwork(nodes)
+	network.Start()
+	defer network.Stop()
+	n.Send(&networksimulator.Packet{Data: []byte{0x01, 0x02}})
+	n.Send(&networksimulator.Packet{Data: []byte{0x02, 0x03}})
+	n.Send(&networksimulator.Packet{Data: []byte{0x03, 0x04}})
+	for {
+		packet := endpoint.Receive()
+		if packet != nil {
+			println("receive packet ", packet.String())
+		}
+	}
+}
 ```
 
-
-
-#### Compile
+#### <div id="compile">Compile
 
 The build environment tested is go v1.16.5, with cmake v3.21.0, clang v12.0.5 and C++ 11.
 
@@ -50,7 +87,9 @@ cmake CMakeLists.txt
 make
 ```
 
-This should generate a file named $libtime.a$ under the cpp directory.
+This should generate a file named $libtime.a$​ under the cpp directory.
+
+To make the compiled library work, a tag *time_compiled* need to be added to go build.
 
 ### Design
 
