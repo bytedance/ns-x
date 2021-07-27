@@ -1,61 +1,57 @@
-# Network Simulator
+# ByteNS
 
-Network Simulator is designed as an easy-to-use, flexible library to simulate internet, written mainly in go.
+An easy-to-use, flexible library to simulate network behavior, written mainly in Go.
 
 ## Feature
 
-* Flexible to construct any network graph with customizable node at any scale
-* Ability to collect any data from any node in the network graph
-* Cross-platform, can be used on any platform / architecture supports go and C++
+* Build highly-customizable and scalable network topology upon basic nodes.
+* Simulate loss, delay, etc. on any nodes by any given parameters and models.
+* Collect data from each and every node in detail.
+* Cross-platform.
 
 ## Introduction
 
 #### Concept
 
-* Network: Simulated network where packets transfer through
-* Node: Simulated physical or logical device in the network
-* Packets: Simulated packet, contains the actual packet with some more information
-* Send: A packet sent to a node means the packet enters the node, waiting to emit
-* Emit: A packet is emitted means the packet leaves the node, transfer to the next node
+* Network: a topological graph consist of *node*s, reflecting a real-world network for packets to transfer through.
+* Node: a physical or logical device in the *network* allowing *packet*s to enter and leave. A *node* usually chains other *Node*s to build the network.
+* Packet: simulated data packets transferring between *node*s, carrying the actual packet data with additional simulator information.
+* Send: (*packet*s) to enter a node, waiting to *emit*.
+* Emit: (*packet*s) to leave a *node* toward the next chained *node*.
 
-#### Install
+#### Prerequisites
 
-The installation only requires to add it into go.mod.
-
-The project use cgo to implement high resolution time, by default, binary for windows, linux and bsd with amd64 are pre-built, other platforms or architectures need to compile it by self. (See the <a href = "#compile">compile</a> section)
+- `Go mod` must be supported and enabled.  
+- A platform-specific `binary/*/libtime.a` library is required by cgo for high resolution timer. Its Windows, Linux, and Darwin binaries are pre-built. Compile the library manually if running on another arch/os. (See <a href = "#compile">compile</a> section)    
 
 #### Usage
 
-The simulation can be separated into three parts: build model, simulate and collect data.
+Follow three steps: building network, simulating, and collecting data.
 
-##### Build Model
+##### Building network
 
-Node can be connected to other nodes and form the network, normal node can only have exactly one node as it's next node, but some kind of nodes can have multiple next nodes, or even no next nodes.
+The network is built by nodes and chains (i.e. edges in the network graph). Normally a chain connects only two nodes, each on one end. For special cases a chain may have multiple node or no node on its ends.  
 
-Each node has two methods: Send and Emit, Send means the packet enter the node while Emit means the packet leave the node and transfer to the next node if necessary. 
+Nodes are highly customizable, and some typical nodes are pre-defined:   
 
-Each node has a callback called when a packet emitted, where users can collect data.
+* Broadcast: a node transfers packet from one source to multiple targets.
+* Channel: a node delays, losses or reorders packets passing by.
+* Endpoint: a node only accepts incoming packets, usually acting as the end of a chain.
+* Gather: a node gathers packets from multiple sources to a single target.
+* Restrict: a node limits pps or bps by dropping packets when its internal buffer overflows.
+* Scatter: a node selects which node the incoming packet should be route to according to a given rule.
 
-Node can be customized with high flexibility, but some widely used nodes are already pre-defined:
+##### Simulating
 
-* Broadcast: A broadcast node can transfer the same packet to multiple target.
-* Channel: A channel node can delay, loss or reorder packets through it.
-* Endpoint: An endpoint node is where packets can be received, this node is usually the end of a node chain.
-* Gather: A gather node gather packets from multiple sources, and transfer them to a target.
-* Restrict: A restrict node block following packets when reach the restrict, and drop following packets once the internal buffer overflow.
-* Scatter: A scatter node transfer packets of a source to one of its targets selected by a user-defined rule.
+Once the network is built, packets can be sent into any entry nodes and received from any exit nodes.
 
-##### Simulate
+##### Collecting Data
 
-Once the network is built, packets can be sent to the entry and received at the exit. The simulated network and nodes will act as defined to transfer data, until simulation finished.
-
-##### Collect Data
-
-Data are collected during the simulation through registered callback. However, only necessary work can be done in the callback, or the simulation would be affected. Once simulation finished, further analyze can be done on the collected data.
+Data could be collected by callback function `node.OnEmitCallback()`. Any further analyses to the collected data could be done after the simulation. Also note that time-costing callbacks would slow down the simulation so keep an eye on its performance.
 
 #### Example
 
-Following is an example of sending packets through a simulated channel, with packet-loss possibility of $$32\%$$.
+Following is an example of sending packets through a simulated channel with `32%` packet loss.
 
 ```go
 package main
@@ -67,12 +63,11 @@ import (
 
 func main() {
 	endpoint := networksimulator.NewEndpoint()
-	source := rand.NewSource(0)
-	random := rand.New(source)
+	random := rand.New(rand.NewSource(0))
 	l := networksimulator.NewRandomLoss(0.32, random)
 	n := networksimulator.NewChannel(endpoint, 0, func(packet *networksimulator.SimulatedPacket) {
-		println("Emit packet ", packet.String())
-	}, l)
+		    println("Emit packet ", packet.String())
+	    }, l)
 	nodes := []networksimulator.Node{endpoint, n}
 	network := networksimulator.NewNetwork(nodes)
 	network.Start()
@@ -89,11 +84,9 @@ func main() {
 }
 ```
 
-#### Compile<span id="compile"/>
+#### Compile libtime<span id="compile"/>
 
-The build environment tested is go v1.16.5, with cmake v3.21.0, clang v12.0.5 and C++ 11.
-
-The project use cgo to implement high resolution time under the cpp directory, to compile it, go to the directory and use cmake to build.
+The following library is built successfully on Go v1.16.5, cmake v3.21.0, clang v12.0.5, with C++ 11.
 
 ```bash
 cd cpp
@@ -101,11 +94,12 @@ cmake CMakeLists.txt
 make
 ```
 
-This should generate a file named $libtime.a$ under the cpp directory.
+which generates file `libtime.a` under `cpp` directory.
 
 To make the compiled library work, a tag *time_compiled* need to be added to go build.
+**code example required**
 
-There is also a configuration named *cross-compile.cmake*, which can be used to cross compile the high resolution time library with little modification.
+There is also a configuration file `cross-compile.cmake` for cross compiling the high resolution time library with little modification.
 
 ## Design
 
@@ -139,5 +133,4 @@ Currently, high resolution time is a wrapper of C++ time library. The core desig
 #### Future work
 
 * parallelize main loop
-* implement commonly used protocol stack as node
-
+* implement commonly used protocol stack as a new node type
