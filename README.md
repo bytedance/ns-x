@@ -97,7 +97,10 @@ make
 which generates file `libtime.a` under `cpp` directory.
 
 To make the compiled library work, a tag *time_compiled* need to be added to go build.
-**code example required**
+
+```bash
+go build -tags time_compiled
+```
 
 There is also a configuration file `cross-compile.cmake` for cross compiling the high resolution time library with little modification.
 
