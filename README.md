@@ -57,24 +57,25 @@ Following is an example of sending packets through a simulated channel with `32%
 package main
 
 import (
+	"byte_ns"
 	"math/rand"
-	"network-simulator"
 )
 
 func main() {
-	endpoint := networksimulator.NewEndpoint()
+	endpoint := byte_ns.NewEndpoint()
 	random := rand.New(rand.NewSource(0))
-	l := networksimulator.NewRandomLoss(0.32, random)
-	n := networksimulator.NewChannel(endpoint, 0, func(packet *networksimulator.SimulatedPacket) {
-		    println("Emit packet ", packet.String())
-	    }, l)
-	nodes := []networksimulator.Node{endpoint, n}
-	network := networksimulator.NewNetwork(nodes)
+	loss := byte_ns.NewRandomLoss(0.32, random)
+	node := byte_ns.NewChannel(0, func(packet *byte_ns.SimulatedPacket) {
+		println("Emit packet ", packet.String())
+	}, loss)
+	node.Next = endpoint
+	nodes := []byte_ns.Node{endpoint, node}
+	network := byte_ns.NewNetwork(nodes)
 	network.Start()
 	defer network.Stop()
-	n.Send(&networksimulator.Packet{Data: []byte{0x01, 0x02}})
-	n.Send(&networksimulator.Packet{Data: []byte{0x02, 0x03}})
-	n.Send(&networksimulator.Packet{Data: []byte{0x03, 0x04}})
+	node.Send(&byte_ns.Packet{Data: []byte{0x01, 0x02}})
+	node.Send(&byte_ns.Packet{Data: []byte{0x02, 0x03}})
+	node.Send(&byte_ns.Packet{Data: []byte{0x03, 0x04}})
 	for {
 		packet := endpoint.Receive()
 		if packet != nil {
