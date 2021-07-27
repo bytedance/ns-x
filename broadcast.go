@@ -9,7 +9,7 @@ type Broadcast struct {
 // NewBroadcast creates a new Broadcast with given Node(s)
 func NewBroadcast(nodes []Node, callback OnEmitCallback) *Broadcast {
 	return &Broadcast{
-		BasicNode: *NewBasicNode(nil, 0, callback),
+		BasicNode: *NewBasicNode(0, callback),
 		nodes:     nodes,
 	}
 }

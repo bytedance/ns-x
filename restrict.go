@@ -19,14 +19,14 @@ type Restrict struct {
 }
 
 // NewRestrict create a new restrict with the given parameter
-// next, recordSize, onEmitCallback the same as BasicNode
+// Next, recordSize, onEmitCallback the same as BasicNode
 // ppsLimit, bpsLimit: the limit of Packets per second/bytes per second
 // bufferSizeLimit, bufferCountLimit: the limit of waiting Packets, in bytes/Packets
-func NewRestrict(next Node, recordSize int, onEmitCallback OnEmitCallback,
+func NewRestrict(recordSize int, onEmitCallback OnEmitCallback,
 	ppsLimit, bpsLimit float64,
 	bufferSizeLimit, bufferCountLimit uint64) *Restrict {
 	return &Restrict{
-		BasicNode:        *NewBasicNode(next, recordSize, onEmitCallback),
+		BasicNode:        *NewBasicNode(recordSize, onEmitCallback),
 		ppsLimit:         ppsLimit,
 		bpsLimit:         bpsLimit,
 		bufferSizeLimit:  bufferSizeLimit,

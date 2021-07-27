@@ -16,7 +16,7 @@ type Packet struct {
 // SimulatedPacket Indicates a simulated packet, with its Actual packet and some simulated environment
 type SimulatedPacket struct {
 	Actual   *Packet   // the Actual packet
-	EmitTime time.Time // when this packet is emitted (Where Emit a packet means the packet leaves the Where, send to the next Where)
+	EmitTime time.Time // when this packet is emitted (Where Emit a packet means the packet leaves the Where, send to the Next Where)
 	SentTime time.Time // when this packet is sent (Where send a packet means the packet enters the Where, waiting to Emit)
 	Loss     bool      // whether this packet is lost
 	Where    Node      // where is the packet

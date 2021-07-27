@@ -2,16 +2,15 @@ package networksimulator
 
 // BasicNode implements a basic Node
 type BasicNode struct {
-	next           Node
+	Next           Node
 	buffer         *PacketBuffer
 	record         *PacketQueue
 	onEmitCallback OnEmitCallback
 }
 
 // NewBasicNode creates a new BasicNode
-func NewBasicNode(next Node, recordSize int, onEmitCallback OnEmitCallback) *BasicNode {
+func NewBasicNode(recordSize int, onEmitCallback OnEmitCallback) *BasicNode {
 	return &BasicNode{
-		next:           next,
 		buffer:         NewPacketBuffer(),
 		record:         NewPacketQueue(recordSize),
 		onEmitCallback: onEmitCallback,
@@ -33,8 +32,8 @@ func (n *BasicNode) Emit(packet *SimulatedPacket) {
 	if packet.Loss {
 		return
 	}
-	if n.next != nil {
-		n.next.Send(packet.Actual)
+	if n.Next != nil {
+		n.Next.Send(packet.Actual)
 	}
 }
 

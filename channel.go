@@ -28,9 +28,9 @@ type Channel struct {
 }
 
 // NewChannel creates a new channel
-func NewChannel(next Node, recordSize int, onEmitCallback OnEmitCallback, handler PacketHandler) *Channel {
+func NewChannel(recordSize int, onEmitCallback OnEmitCallback, handler PacketHandler) *Channel {
 	return &Channel{
-		BasicNode: *NewBasicNode(next, recordSize, onEmitCallback),
+		BasicNode: *NewBasicNode(recordSize, onEmitCallback),
 		handler:   handler,
 	}
 }
