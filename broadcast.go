@@ -14,9 +14,17 @@ func NewBroadcast(nodes []Node, callback OnEmitCallback) *Broadcast {
 	}
 }
 
-func (b *Broadcast) Emit(packet *SimulatedPacket) {
+func (b *Broadcast) Send(packet *Packet) {
 	for _, n := range b.nodes {
-		n.Send(packet.Actual)
+		n.Send(packet)
 	}
-	b.BasicNode.Emit(packet)
+	t := Now()
+	p := &SimulatedPacket{
+		Actual:   packet,
+		EmitTime: t,
+		SentTime: t,
+		Loss:     false,
+		Where:    b,
+	}
+	b.BasicNode.OnSend(p)
 }
