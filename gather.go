@@ -1,5 +1,6 @@
 package networksimulator
 
+// Gather ...
 type Gather struct {
 	BasicNode
 }

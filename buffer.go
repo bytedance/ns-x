@@ -5,11 +5,13 @@ import (
 	"unsafe"
 )
 
+// PacketBuffer is ...
 type PacketBuffer struct {
 	node *atomic.UnsafePointer
 }
 
-func NewPackerBuffer() *PacketBuffer {
+// NewPacketBuffer creates a new packet buffer
+func NewPacketBuffer() *PacketBuffer {
 	return &PacketBuffer{
 		node: atomic.NewUnsafePointer(nil),
 	}
@@ -20,6 +22,7 @@ type node struct {
 	data *SimulatedPacket
 }
 
+// Insert ...
 func (b *PacketBuffer) Insert(packet *SimulatedPacket) {
 	n := &node{next: (*node)(b.node.Load()), data: packet}
 	for !b.node.CAS(unsafe.Pointer(n.next), unsafe.Pointer(n)) {
@@ -27,6 +30,7 @@ func (b *PacketBuffer) Insert(packet *SimulatedPacket) {
 	}
 }
 
+// Reduce ...
 func (b *PacketBuffer) Reduce(action func(packet *SimulatedPacket)) {
 	n := b.node.Swap(nil)
 	node := (*node)(n)

@@ -4,11 +4,10 @@ import (
 	"time"
 )
 
-// PacketHandler 定义了网损模块
-// 返回值：delayTime: 经过该模块的延迟; isLoss: 是否丢包, True为丢包
-type PacketHandler func(packet *Packet, record *PacketQueue) (time.Duration, bool)
+// PacketHandler handles how much a Packet delayed and whether lost in a PacketQueue
+type PacketHandler func(packet *Packet, record *PacketQueue) (delay time.Duration, lost bool)
 
-// Combine the given handlers, the result will add up all the delay time and loss
+// Combine given handlers to sum up all their delays and losses
 func Combine(handlers ...PacketHandler) PacketHandler {
 	return func(packet *Packet, record *PacketQueue) (time.Duration, bool) {
 		delay := time.Duration(0)
@@ -22,7 +21,7 @@ func Combine(handlers ...PacketHandler) PacketHandler {
 	}
 }
 
-// Channel indicates a simulated channel, with loss, delay and reorder
+// Channel is a simulated network channel with loss, delay and reorder features
 type Channel struct {
 	BasicNode
 	handler PacketHandler

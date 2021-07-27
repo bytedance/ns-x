@@ -2,7 +2,7 @@ package networksimulator
 
 const preserveBufferSize = 10
 
-// Endpoint is a node to receive Packets, Packets reach an endpoint will no longer transmit
+// Endpoint is a node to receive Packets, Packets reached an endpoint will no longer be transmitted
 type Endpoint struct {
 	BasicNode
 	concurrentBuffer *PacketBuffer
@@ -12,7 +12,7 @@ type Endpoint struct {
 func NewEndpoint() *Endpoint {
 	return &Endpoint{
 		BasicNode:        BasicNode{},
-		concurrentBuffer: NewPackerBuffer(),
+		concurrentBuffer: NewPacketBuffer(),
 		localBuffer:      make([]*SimulatedPacket, 0, preserveBufferSize),
 	}
 }

@@ -5,9 +5,9 @@ import (
 	"time"
 )
 
-// Reorder 接口，目前有不乱序，概率乱序，gap乱序三种模型
-type Reorder interface {
-	// Reorder 返回需要增加的延迟时间 (可能为负值)，通过将该包更"早"发送实现乱序
+// Reorderer 接口，目前有不乱序，概率乱序，gap乱序三种模型
+type Reorderer interface {
+	// Reorderer 返回需要增加的延迟时间 (可能为负值)，通过将该包更"早"发送实现乱序
 	Reorder() time.Duration
 }
 
@@ -15,7 +15,7 @@ type Reorder interface {
 type NoneReorder struct {
 }
 
-var _ Reorder = &NoneReorder{}
+var _ Reorderer = &NoneReorder{}
 
 func NewNoneReorder() PacketHandler {
 	reorder := &NoneReorder{}
@@ -41,7 +41,7 @@ type NormalReorder struct {
 	random      *rand.Rand
 }
 
-var _ Reorder = &NormalReorder{}
+var _ Reorderer = &NormalReorder{}
 
 func NewNormalReorder(delay time.Duration, possibility, correlation float64, random *rand.Rand) PacketHandler {
 	reorder := &NormalReorder{
@@ -85,7 +85,7 @@ type GapReorder struct {
 	random      *rand.Rand
 }
 
-var _ Reorder = &GapReorder{}
+var _ Reorderer = &GapReorder{}
 
 func NewGapReorder(delay time.Duration, possibility,
 	correlation float64, gap int, random *rand.Rand) PacketHandler {

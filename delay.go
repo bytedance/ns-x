@@ -5,8 +5,6 @@ import (
 	"time"
 )
 
-// Delay 接口
-// 目前有无分布，正态分布，均匀分布三种实现
 type Delay interface {
 	Delay() time.Duration   // 返回具体延迟（包含jitter）
 	Average() time.Duration // 返回参数 average
