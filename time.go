@@ -1,6 +1,6 @@
 // +build cgo,time_compiled
 
-package networksimulator
+package byte_ns
 
 /*
 #cgo CFLAGS: -I${SRCDIR}/cpp

@@ -1,4 +1,4 @@
-package networksimulator
+package byte_ns
 
 // PacketHeap ...
 type PacketHeap struct {

@@ -1,4 +1,4 @@
-package networksimulator
+package byte_ns
 
 // Gather ...
 type Gather struct {

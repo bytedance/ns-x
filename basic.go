@@ -1,4 +1,4 @@
-package networksimulator
+package byte_ns
 
 // BasicNode implements a basic Node
 type BasicNode struct {

@@ -1,6 +1,6 @@
 // +build cgo,!time_compiled,darwin,amd64 cgo,!time_compiled,freebsd,amd64 cgo,!time_compiled,dragonfly,amd64
 
-package networksimulator
+package byte_ns
 
 /*
 #cgo CFLAGS: -I${SRCDIR}/cpp

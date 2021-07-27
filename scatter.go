@@ -1,4 +1,4 @@
-package networksimulator
+package byte_ns
 
 type PathSelector func(packet *SimulatedPacket, record *PacketQueue, nodes []Node) Node
 

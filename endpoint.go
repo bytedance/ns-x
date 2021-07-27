@@ -1,4 +1,4 @@
-package networksimulator
+package byte_ns
 
 const preserveBufferSize = 10
 
