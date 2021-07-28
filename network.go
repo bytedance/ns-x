@@ -47,6 +47,7 @@ func (n *Network) mainLoop() {
 	if !n.running.CAS(false, true) {
 		return
 	}
+	defer n.running.Store(false)
 	println("network main loop start")
 	runtime.LockOSThread()
 	defer runtime.UnlockOSThread()
