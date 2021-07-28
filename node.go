@@ -2,6 +2,7 @@ package byte_ns
 
 // Node Indicates a simulated node in the network
 type Node interface {
+	Name() string
 	Send(packet *Packet) // Send a packet to the node
 	Packets() *PacketBuffer
 	Emit(packet *SimulatedPacket)

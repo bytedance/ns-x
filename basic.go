@@ -2,6 +2,7 @@ package byte_ns
 
 // BasicNode implements a basic Node
 type BasicNode struct {
+	name           string
 	next           []Node
 	buffer         *PacketBuffer
 	record         *PacketQueue
@@ -9,13 +10,18 @@ type BasicNode struct {
 }
 
 // NewBasicNode creates a new BasicNode
-func NewBasicNode(recordSize int, onEmitCallback OnEmitCallback) *BasicNode {
+func NewBasicNode(name string, recordSize int, onEmitCallback OnEmitCallback) *BasicNode {
 	return &BasicNode{
+		name:           name,
 		next:           []Node{},
 		buffer:         NewPacketBuffer(),
 		record:         NewPacketQueue(recordSize),
 		onEmitCallback: onEmitCallback,
 	}
+}
+
+func (n *BasicNode) Name() string {
+	return n.name
 }
 
 func (n *BasicNode) OnSend(packet *SimulatedPacket) {

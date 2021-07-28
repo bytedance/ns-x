@@ -7,9 +7,9 @@ type Scatter struct {
 	selector PathSelector
 }
 
-func NewScatter(selector PathSelector) *Scatter {
+func NewScatter(name string, selector PathSelector) *Scatter {
 	return &Scatter{
-		BasicNode: BasicNode{},
+		BasicNode: BasicNode{name: name},
 		selector:  selector,
 	}
 }

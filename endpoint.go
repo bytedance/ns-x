@@ -9,9 +9,9 @@ type Endpoint struct {
 	localBuffer      []*SimulatedPacket
 }
 
-func NewEndpoint() *Endpoint {
+func NewEndpoint(name string) *Endpoint {
 	return &Endpoint{
-		BasicNode:        BasicNode{},
+		BasicNode:        BasicNode{name: name},
 		concurrentBuffer: NewPacketBuffer(),
 		localBuffer:      make([]*SimulatedPacket, 0, preserveBufferSize),
 	}

@@ -6,21 +6,32 @@ import (
 )
 
 func TestBasic(t *testing.T) {
-	endpoint := NewEndpoint()
 	source := rand.NewSource(0)
 	random := rand.New(source)
-	l := NewRandomLoss(0.32, random)
-	node := NewChannel(0, func(packet *SimulatedPacket) {
-		println("OnEmit packet ", packet.String())
-	}, l)
-	node.SetNext(endpoint)
-	nodes := []Node{endpoint, node}
-	network := NewNetwork(nodes)
+	helper := NewBuilder()
+	callback := func(packet *SimulatedPacket) {
+		println("emit packet", packet)
+	}
+	n1 := NewChannel("entry1", 0, callback, NewRandomLoss(0.3, random))
+	network, nodes := helper.
+		Chain().
+		Node(n1).
+		Node(NewRestrict("", 0, nil, 1.0, 1024.0, 4096, 5)).
+		Node(NewEndpoint("endpoint")).
+		Chain().
+		Node(NewChannel("entry2", 0, callback, NewRandomLoss(0.1, random))).
+		NodeByName("endpoint").
+		Build()
 	network.Start()
 	defer network.Stop()
-	node.Send(&Packet{Data: []byte{0x01, 0x02}})
-	node.Send(&Packet{Data: []byte{0x02, 0x03}})
-	node.Send(&Packet{Data: []byte{0x03, 0x04}})
+	entry1 := nodes["entry1"]
+	entry2 := nodes["entry2"]
+	endpoint := nodes["endpoint"].(*Endpoint)
+	entry1.Send(&Packet{Data: []byte{0x01, 0x02}})
+	entry1.Send(&Packet{Data: []byte{0x02, 0x03}})
+	entry1.Send(&Packet{Data: []byte{0x03, 0x04}})
+	entry2.Send(&Packet{Data: []byte{0x03, 0x04}})
+	entry2.Send(&Packet{Data: []byte{0x03, 0x04}})
 	for {
 		packet := endpoint.Receive()
 		if packet != nil {

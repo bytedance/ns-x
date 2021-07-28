@@ -5,6 +5,10 @@ type Gather struct {
 	BasicNode
 }
 
+func NewGather(name string) *Gather {
+	return &Gather{BasicNode{name: name}}
+}
+
 func (g *Gather) Send(packet *Packet) {
 	t := Now()
 	p := &SimulatedPacket{
