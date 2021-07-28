@@ -29,7 +29,7 @@ func (n *Network) fetch(packetHeap heap.Interface) {
 	}
 }
 
-// drain Drain the given heap if possible, and Emit the Packets available
+// drain Drain the given heap if possible, and OnEmit the Packets available
 func (n *Network) drain(packetHeap *PacketHeap) {
 	t := Now()
 	for !packetHeap.IsEmpty() {

@@ -11,9 +11,9 @@ func TestBasic(t *testing.T) {
 	random := rand.New(source)
 	l := NewRandomLoss(0.32, random)
 	node := NewChannel(0, func(packet *SimulatedPacket) {
-		println("Emit packet ", packet.String())
+		println("OnEmit packet ", packet.String())
 	}, l)
-	node.Next = endpoint
+	node.SetNext(endpoint)
 	nodes := []Node{endpoint, node}
 	network := NewNetwork(nodes)
 	network.Start()

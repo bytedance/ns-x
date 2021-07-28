@@ -27,6 +27,7 @@ func (e *Endpoint) Send(packet *Packet) {
 		Where:    e,
 	}
 	e.concurrentBuffer.Insert(p)
+	e.OnSend(p)
 }
 
 func (e *Endpoint) Receive() *SimulatedPacket {

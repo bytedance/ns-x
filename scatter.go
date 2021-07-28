@@ -5,7 +5,6 @@ type PathSelector func(packet *SimulatedPacket, record *PacketQueue, nodes []Nod
 type Scatter struct {
 	BasicNode
 	selector PathSelector
-	Paths    []Node
 }
 
 func NewScatter(selector PathSelector) *Scatter {
@@ -24,9 +23,10 @@ func (s *Scatter) Send(packet *Packet) {
 		Loss:     false,
 		Where:    s,
 	}
-	path := s.selector(p, s.record, s.Paths)
+	s.OnSend(p)
+	path := s.selector(p, s.record, s.next)
 	if path != nil {
 		path.Send(packet)
 	}
-	s.BasicNode.OnSend(p)
+	s.OnEmit(p)
 }

@@ -19,7 +19,7 @@ type Restrict struct {
 }
 
 // NewRestrict create a new restrict with the given parameter
-// Next, recordSize, onEmitCallback the same as BasicNode
+// next, recordSize, onEmitCallback the same as BasicNode
 // ppsLimit, bpsLimit: the limit of Packets per second/bytes per second
 // bufferSizeLimit, bufferCountLimit: the limit of waiting Packets, in bytes/Packets
 func NewRestrict(recordSize int, onEmitCallback OnEmitCallback,
@@ -38,7 +38,7 @@ func NewRestrict(recordSize int, onEmitCallback OnEmitCallback,
 }
 
 func (r *Restrict) Emit(packet *SimulatedPacket) {
-	r.BasicNode.Emit(packet)
+	r.Emit(packet)
 	r.bufferSize.Sub(uint64(len(packet.Actual.Data)))
 	r.bufferCount.Dec()
 }
@@ -53,7 +53,7 @@ func (r *Restrict) Send(packet *Packet) {
 	}
 	emitTime := r.emitTime
 	p := &SimulatedPacket{Actual: packet, EmitTime: emitTime, SentTime: sentTime, Loss: false, Where: r}
-	r.buffer.Insert(p)
+	r.Packets().Insert(p)
 	step := math.Max(1.0/r.ppsLimit, float64(len(packet.Data))/r.bpsLimit)
 	r.emitTime = emitTime.Add(time.Duration(step*1000*1000) * time.Microsecond)
 	r.bufferSize.Add(uint64(len(packet.Data)))

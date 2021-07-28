@@ -14,6 +14,6 @@ func (g *Gather) Send(packet *Packet) {
 		Where:    g,
 		Loss:     false,
 	}
-	g.buffer.Insert(p)
-	g.BasicNode.OnSend(p)
+	g.OnSend(p)
+	g.Emit(p)
 }
