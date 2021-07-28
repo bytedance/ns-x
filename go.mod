@@ -1,4 +1,4 @@
-module network-simulator
+module byte-ns
 
 go 1.16
 
