@@ -38,7 +38,7 @@ func NewRestrict(recordSize int, onEmitCallback OnEmitCallback,
 }
 
 func (r *Restrict) Emit(packet *SimulatedPacket) {
-	r.Emit(packet)
+	r.BasicNode.Emit(packet)
 	r.bufferSize.Sub(uint64(len(packet.Actual.Data)))
 	r.bufferCount.Dec()
 }
