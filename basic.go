@@ -19,7 +19,9 @@ func NewBasicNode(recordSize int, onEmitCallback OnEmitCallback) *BasicNode {
 }
 
 func (n *BasicNode) OnSend(packet *SimulatedPacket) {
-	n.record.Enqueue(packet)
+	if n.record != nil {
+		n.record.Enqueue(packet)
+	}
 }
 
 func (n *BasicNode) Packets() *PacketBuffer {
