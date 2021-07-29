@@ -85,7 +85,7 @@ func (b *builder) NodeByName(name string) Builder {
 	return b.Node(node)
 }
 
-func (b builder) GroupByName(name string) Builder {
+func (b *builder) GroupByName(name string) Builder {
 	group, ok := b.groups[name]
 	if !ok {
 		panic("no group with name: " + name)
