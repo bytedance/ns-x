@@ -1,12 +1,13 @@
 package byte_ns
 
+// PacketQueue is a ring queue of fixed size, it's usually used as a history record of packets sent in the past
 type PacketQueue struct {
 	head, tail, length int
 	storage            []*SimulatedPacket
 }
 
 func NewPacketQueue(length int) *PacketQueue {
-	return &PacketQueue{head: 0, tail: 0, length: length + 1, storage: make([]*SimulatedPacket, length+1, length+1)}
+	return &PacketQueue{head: 0, tail: 0, length: length + 1, storage: make([]*SimulatedPacket, length+1)}
 }
 
 func (q *PacketQueue) IsEmpty() bool {
@@ -58,6 +59,7 @@ func (q *PacketQueue) At(index int) *SimulatedPacket {
 	return q.storage[index]
 }
 
+// Do iterate the queue with the given action
 func (q *PacketQueue) Do(action func(simulatedPacket *SimulatedPacket)) {
 	for i := q.head; i != q.tail; i++ {
 		if i >= q.length {

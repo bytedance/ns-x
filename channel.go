@@ -4,7 +4,7 @@ import (
 	"time"
 )
 
-// PacketHandler handles how much a Packet delayed and whether lost in a PacketQueue
+// PacketHandler handles how much a Packet delayed and whether lost according to historical records
 type PacketHandler func(packet *Packet, record *PacketQueue) (delay time.Duration, lost bool)
 
 // Combine given handlers to sum up all their delays and losses

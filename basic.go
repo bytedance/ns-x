@@ -24,6 +24,7 @@ func (n *BasicNode) Name() string {
 	return n.name
 }
 
+// OnSend do some common tasks, should be called by Send of implementations
 func (n *BasicNode) OnSend(packet *SimulatedPacket) {
 	if n.record != nil {
 		n.record.Enqueue(packet)
@@ -34,6 +35,7 @@ func (n *BasicNode) Packets() *PacketBuffer {
 	return n.buffer
 }
 
+// OnEmit do some common tasks, should be called by Emit of implementations
 func (n *BasicNode) OnEmit(packet *SimulatedPacket) {
 	if n.onEmitCallback != nil {
 		n.onEmitCallback(packet)

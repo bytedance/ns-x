@@ -30,6 +30,7 @@ func (e *Endpoint) Send(packet *Packet) {
 	e.OnSend(p)
 }
 
+// Receive a packet if possible, nil otherwise
 func (e *Endpoint) Receive() *SimulatedPacket {
 	if len(e.localBuffer) == 0 {
 		e.concurrentBuffer.Reduce(func(packet *SimulatedPacket) {

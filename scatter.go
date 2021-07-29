@@ -1,7 +1,9 @@
 package byte_ns
 
+// PathSelector is rule of how to select the path of packet
 type PathSelector func(packet *SimulatedPacket, record *PacketQueue, nodes []Node) Node
 
+// Scatter transfer packet pass by to one of its next nodes according to a given rule
 type Scatter struct {
 	BasicNode
 	selector PathSelector

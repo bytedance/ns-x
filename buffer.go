@@ -5,7 +5,7 @@ import (
 	"unsafe"
 )
 
-// PacketBuffer is ...
+// PacketBuffer is a thread-safe, lock-free buffer used to store simulated packets, implemented like a single link list
 type PacketBuffer struct {
 	node *atomic.UnsafePointer
 }
@@ -22,7 +22,7 @@ type node struct {
 	data *SimulatedPacket
 }
 
-// Insert ...
+// Insert a simulated packet to the buffer, thread-safe
 func (b *PacketBuffer) Insert(packet *SimulatedPacket) {
 	n := &node{next: (*node)(b.node.Load()), data: packet}
 	for !b.node.CAS(unsafe.Pointer(n.next), unsafe.Pointer(n)) {
@@ -30,7 +30,7 @@ func (b *PacketBuffer) Insert(packet *SimulatedPacket) {
 	}
 }
 
-// Reduce ...
+// Reduce means clear the buffer and do an action on the data cleared, thread-safe
 func (b *PacketBuffer) Reduce(action func(packet *SimulatedPacket)) {
 	n := b.node.Swap(nil)
 	node := (*node)(n)
