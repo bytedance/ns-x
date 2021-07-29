@@ -51,6 +51,8 @@ Data could be collected by callback function `node.OnEmitCallback()`. Any furthe
 
 #### Example
 
+A network builder is also provided in order to describe the whole network conveniently.
+
 Following is an example of sending packets through a simulated channel with `32%` packet loss.
 
 ```go
@@ -62,20 +64,32 @@ import (
 )
 
 func main() {
-	endpoint := byte_ns.NewEndpoint()
-	random := rand.New(rand.NewSource(0))
-	loss := byte_ns.NewRandomLoss(0.32, random)
-	node := byte_ns.NewChannel(0, func(packet *byte_ns.SimulatedPacket) {
-		println("Emit packet ", packet.String())
-	}, loss)
-	node.Next = endpoint
-	nodes := []byte_ns.Node{endpoint, node}
-	network := byte_ns.NewNetwork(nodes)
+	source := rand.NewSource(0)
+	random := rand.New(source)
+	helper := byte_ns.NewBuilder()
+	callback := func(packet *byte_ns.SimulatedPacket) {
+		println("emit packet", packet)
+	}
+	n1 := byte_ns.NewChannel("entry1", 0, callback, byte_ns.NewRandomLoss(0.3, random))
+	network, nodes := helper.
+		Chain().
+		Node(n1).
+		Node(byte_ns.NewRestrict("", 0, nil, 1.0, 1024.0, 4096, 5)).
+		Node(byte_ns.NewEndpoint("endpoint")).
+		Chain().
+		Node(byte_ns.NewChannel("entry2", 0, callback, byte_ns.NewRandomLoss(0.1, random))).
+		NodeByName("endpoint").
+		Build()
 	network.Start()
 	defer network.Stop()
-	node.Send(&byte_ns.Packet{Data: []byte{0x01, 0x02}})
-	node.Send(&byte_ns.Packet{Data: []byte{0x02, 0x03}})
-	node.Send(&byte_ns.Packet{Data: []byte{0x03, 0x04}})
+	entry1 := nodes["entry1"]
+	entry2 := nodes["entry2"]
+	endpoint := nodes["endpoint"].(*byte_ns.Endpoint)
+	entry1.Send(&byte_ns.Packet{Data: []byte{0x01, 0x02}})
+	entry1.Send(&byte_ns.Packet{Data: []byte{0x02, 0x03}})
+	entry1.Send(&byte_ns.Packet{Data: []byte{0x03, 0x04}})
+	entry2.Send(&byte_ns.Packet{Data: []byte{0x03, 0x04}})
+	entry2.Send(&byte_ns.Packet{Data: []byte{0x03, 0x04}})
 	for {
 		packet := endpoint.Receive()
 		if packet != nil {
