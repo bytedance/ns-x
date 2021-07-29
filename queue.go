@@ -1,12 +1,5 @@
 package byte_ns
 
-import (
-	"errors"
-)
-
-var errEmptyRecord = errors.New("record is empty")
-var errOverflow = errors.New("index is overflow")
-
 type PacketQueue struct {
 	head, tail, length int
 	storage            []*SimulatedPacket
@@ -44,7 +37,7 @@ func (q *PacketQueue) Enqueue(packet *SimulatedPacket) {
 
 func (q *PacketQueue) Dequeue() *SimulatedPacket {
 	if q.head == q.tail {
-		panic(errEmptyRecord)
+		panic("record is empty")
 	}
 	result := q.storage[q.head]
 	q.head++
@@ -56,7 +49,7 @@ func (q *PacketQueue) Dequeue() *SimulatedPacket {
 
 func (q *PacketQueue) At(index int) *SimulatedPacket {
 	if index >= q.Length() {
-		panic(errOverflow)
+		panic("index is overflow")
 	}
 	index += q.head
 	for index >= q.length {
