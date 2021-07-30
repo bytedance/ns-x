@@ -1,17 +1,13 @@
-package networksimulator
+package byte_ns
 
-import "errors"
-
-var errEmptyRecord = errors.New("record is empty")
-var errOverflow = errors.New("index is overflow")
-
+// PacketQueue is a ring queue of fixed size, it's usually used as a history record of packets sent in the past
 type PacketQueue struct {
 	head, tail, length int
 	storage            []*SimulatedPacket
 }
 
 func NewPacketQueue(length int) *PacketQueue {
-	return &PacketQueue{head: 0, tail: 0, length: length + 1, storage: make([]*SimulatedPacket, length+1, length+1)}
+	return &PacketQueue{head: 0, tail: 0, length: length + 1, storage: make([]*SimulatedPacket, length+1)}
 }
 
 func (q *PacketQueue) IsEmpty() bool {
@@ -35,11 +31,14 @@ func (q *PacketQueue) Enqueue(packet *SimulatedPacket) {
 	if q.head == q.tail {
 		q.head++
 	}
+	if q.head >= q.length {
+		q.head = 0
+	}
 }
 
 func (q *PacketQueue) Dequeue() *SimulatedPacket {
 	if q.head == q.tail {
-		panic(errEmptyRecord)
+		panic("record is empty")
 	}
 	result := q.storage[q.head]
 	q.head++
@@ -51,7 +50,7 @@ func (q *PacketQueue) Dequeue() *SimulatedPacket {
 
 func (q *PacketQueue) At(index int) *SimulatedPacket {
 	if index >= q.Length() {
-		panic(errOverflow)
+		panic("index is overflow")
 	}
 	index += q.head
 	for index >= q.length {
@@ -60,6 +59,7 @@ func (q *PacketQueue) At(index int) *SimulatedPacket {
 	return q.storage[index]
 }
 
+// Do iterate the queue with the given action
 func (q *PacketQueue) Do(action func(simulatedPacket *SimulatedPacket)) {
 	for i := q.head; i != q.tail; i++ {
 		if i >= q.length {
