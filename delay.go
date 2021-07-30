@@ -37,11 +37,12 @@ type FixedDelay struct {
 var _ Delay = &FixedDelay{}
 
 // NewFixedDelay 创建一个无分布延迟模型处理函数，average，jitter 单位是 ms
-func NewFixedDelay(average time.Duration, jitter time.Duration) PacketHandler {
+func NewFixedDelay(average time.Duration, jitter time.Duration, random *rand.Rand) PacketHandler {
 	delay := &FixedDelay{
 		&basicDelay{
 			average: average,
 			jitter:  jitter,
+			random:  random,
 		},
 	}
 	return delay.PacketHandler
