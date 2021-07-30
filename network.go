@@ -81,7 +81,6 @@ func (n *Network) split(packetHeap *PacketHeap) {
 
 // mainLoop Main polling loop of network
 func (n *Network) mainLoop(packetHeap *PacketHeap, index int32) {
-	defer n.runningCount.Dec()
 	println("network main loop start #", index)
 	runtime.LockOSThread()
 	defer runtime.UnlockOSThread()
@@ -99,14 +98,16 @@ func (n *Network) mainLoop(packetHeap *PacketHeap, index int32) {
 		}
 		if emptySpinCount >= n.emptySpinLimit {
 			count := n.runningCount.Dec()
-			n.runningCount.Inc()
 			if count > 0 {
+				n.clear(packetHeap)
 				println("network main loop end #", index, "after spun", emptySpinCount, "rounds")
-				break
+				return
 			}
+			n.runningCount.Inc()
 		}
 	}
 	n.clear(packetHeap)
+	n.runningCount.Dec()
 	println("network main loop end #", index)
 }
 
