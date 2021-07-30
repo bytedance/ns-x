@@ -27,7 +27,7 @@ func (packet *SimulatedPacket) String() string {
 	builder.WriteString("Sent time: ")
 	builder.WriteString(packet.SentTime.String())
 	builder.WriteRune('\n')
-	builder.WriteString("OnEmit time: ")
+	builder.WriteString("Emit time: ")
 	builder.WriteString(packet.EmitTime.String())
 	builder.WriteRune('\n')
 	builder.WriteString("Loss: ")

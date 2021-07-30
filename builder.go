@@ -14,7 +14,7 @@ type Builder interface {
 	NodeByName(name string) Builder
 	GroupByName(name string) Builder
 	Chain() Builder
-	Build() (*Network, map[string]Node)
+	Build(loopLimit, emptySpinLimit, splitThreshold int) (*Network, map[string]Node)
 }
 
 type builder struct {
@@ -93,7 +93,7 @@ func (b *builder) GroupByName(name string) Builder {
 	return b.Group(group...)
 }
 
-func (b *builder) Build() (*Network, map[string]Node) {
+func (b *builder) Build(loopLimit, emptySpinLimit, splitThreshold int) (*Network, map[string]Node) {
 	nodes := make([]Node, len(b.nodes))
 	println("network summary: ")
 	for node, index := range b.nodes {
@@ -106,7 +106,7 @@ func (b *builder) Build() (*Network, map[string]Node) {
 		println(b.toString(node, index))
 	}
 	println()
-	return NewNetwork(nodes), b.names
+	return NewNetwork(nodes, loopLimit, emptySpinLimit, splitThreshold), b.names
 }
 
 func (b *builder) toString(node Node, index int) string {
