@@ -99,12 +99,11 @@ func (n *Network) mainLoop(packetHeap *PacketHeap, index int32) {
 		}
 		if emptySpinCount >= n.emptySpinLimit {
 			count := n.runningCount.Dec()
-			if count > 0 {
-				n.clear(packetHeap)
-				println("network main loop end #", index, "after spun", emptySpinCount, "rounds")
-				return
-			}
 			n.runningCount.Inc()
+			if count > 0 {
+				println("network main loop end #", index, "after spun", emptySpinCount, "rounds")
+				break
+			}
 		}
 	}
 	n.clear(packetHeap)
