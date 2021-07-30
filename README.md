@@ -71,16 +71,19 @@ Following is an example of a network with two entries, one endpoint and two chai
 package main
 
 import (
-	"byte_ns"
+	"byte-ns"
 	"math/rand"
+	"runtime"
+	"testing"
 )
 
-func main() {
+func TestBasic(t *testing.T) {
 	source := rand.NewSource(0)
 	random := rand.New(source)
 	helper := byte_ns.NewBuilder()
 	callback := func(packet *byte_ns.SimulatedPacket) {
-		println("emit packet", packet)
+		println("emit packet")
+		println(packet.String())
 	}
 	n1 := byte_ns.NewChannel("entry1", 0, callback, byte_ns.NewRandomLoss(0.3, random))
 	network, nodes := helper.
@@ -91,21 +94,23 @@ func main() {
 		Chain().
 		Node(byte_ns.NewChannel("entry2", 0, callback, byte_ns.NewRandomLoss(0.1, random))).
 		NodeByName("endpoint").
-		Build()
+		Build(runtime.NumCPU()/2, 10, 10)
 	network.Start()
 	defer network.Stop()
 	entry1 := nodes["entry1"]
 	entry2 := nodes["entry2"]
 	endpoint := nodes["endpoint"].(*byte_ns.Endpoint)
-	entry1.Send(&byte_ns.Packet{Data: []byte{0x01, 0x02}})
-	entry1.Send(&byte_ns.Packet{Data: []byte{0x02, 0x03}})
-	entry1.Send(&byte_ns.Packet{Data: []byte{0x03, 0x04}})
-	entry2.Send(&byte_ns.Packet{Data: []byte{0x03, 0x04}})
-	entry2.Send(&byte_ns.Packet{Data: []byte{0x03, 0x04}})
+	for i := 0; i < 20; i++ {
+		entry1.Send(&byte_ns.Packet{Data: []byte{0x01, 0x02}})
+	}
+	for i := 0; i < 20; i++ {
+		entry2.Send(&byte_ns.Packet{Data: []byte{0x01, 0x02}})
+	}
 	for {
 		packet := endpoint.Receive()
 		if packet != nil {
-			println("receive packet ", packet.String())
+			println("receive packet")
+			println(packet.String())
 		}
 	}
 }
@@ -148,7 +153,9 @@ The loop is separated into two parts: fetch and drain.
 * fetch: The main loop clear the packet buffer of all the nodes, and put these packets into the heap.
 * drain: The main loop drain the heap until the heap only contains packets with emit time after the current time.
 
-By now, the main loop lock a single os thread, but in the future, the main loop may run on a fork join pool.
+~~By now, the main loop lock a single os thread, but in the future, the main loop may run on a fork join pool.~~
+
+Parallelized main loop is already implemented, main loop will split once the packet heap reach a given threshold, and exit after spinning a fixed rounds without any task. The active main loop will always exist but no more than a given limit.
 
 #### High Resolution Time
 
@@ -162,5 +169,5 @@ Currently, high resolution time is a wrapper of C++ time library. The core desig
 
 #### Future work
 
-* parallelize main loop
+* ~~parallelize main loop~~ (done)
 * implement commonly used protocol stack as a new node type
