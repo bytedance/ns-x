@@ -62,9 +62,10 @@ Data could be collected by callback function `node.OnEmitCallback()`. Any furthe
 
 #### Example
 
-A network builder is also provided in order to describe the whole network conveniently.
+Following is an example of a network with two entries, one endpoint and two chains.
 
-Following is an example of sending packets through a simulated channel with `32%` packet loss.
+* Chain 1: entry1 - channel1(with `30%` packet loss) - restrict(1 pps, 1024 bps, buffer limited in 4096 bytes and 5 packets) - endpoint
+* Chain 2: entry2 - channel2(with `10%` packet loss) - endpoint
 
 ```go
 package main
