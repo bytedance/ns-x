@@ -111,7 +111,7 @@ func main() {
 }
 ```
 
-#### Compile libtime<span id="compile"/>
+#### Compile from source code<span id="compile"/>
 
 The following library is built successfully on Go v1.16.5, cmake v3.21.0, clang v12.0.5, with C++ 11.
 
