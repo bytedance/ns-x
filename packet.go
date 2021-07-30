@@ -7,13 +7,13 @@ import (
 	"time"
 )
 
-// Packet Indicates an Actual packet, with its data and Address
+// Packet indicates an Actual packet, with its data and Address
 type Packet struct {
 	Data    []byte
 	Address net.Addr
 }
 
-// SimulatedPacket Indicates a simulated packet, with its Actual packet and some simulated environment
+// SimulatedPacket indicates a simulated packet, with its Actual packet and some simulated environment
 type SimulatedPacket struct {
 	Actual   *Packet   // the Actual packet
 	EmitTime time.Time // when this packet is emitted (Where OnEmit a packet means the packet leaves the Where, send to the next Where)
