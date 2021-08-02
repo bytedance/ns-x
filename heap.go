@@ -35,5 +35,5 @@ func (q *PacketHeap) Peek() *SimulatedPacket {
 	if q.IsEmpty() {
 		return nil
 	}
-	return q.storage[q.Len()-1]
+	return q.storage[0]
 }

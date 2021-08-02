@@ -50,7 +50,6 @@ func (n *BasicNode) Emit(packet *SimulatedPacket) {
 	for _, node := range n.next {
 		node.Send(packet.Actual)
 	}
-
 }
 
 func (n *BasicNode) Send(packet *Packet) {
