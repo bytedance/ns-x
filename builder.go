@@ -6,14 +6,24 @@ import (
 	"strings"
 )
 
+// Builder is a convenience tool to describe the whole network and build
 type Builder interface {
-	Node(node Node) Builder
-	Group(nodes ...Node) Builder
-	NodeWithName(name string, node Node) Builder
-	GroupWithName(name string, nodes ...Node) Builder
-	NodeByName(name string) Builder
-	GroupByName(name string) Builder
+	// Chain save the current chain and begin to describe a new chain
 	Chain() Builder
+	// Node connect the given node to the end of current chain, and name it if given node's name is not empty
+	Node(node Node) Builder
+	// Group connect the given nodes to the end of current chain one by one in order
+	Group(nodes ...Node) Builder
+	// NodeWithName same to Node, but use the given name instead of node's name
+	NodeWithName(name string, node Node) Builder
+	// GroupWithName same to Group, but name the whole group with the given name
+	GroupWithName(name string, nodes ...Node) Builder
+	// NodeByName find the node with the given name, and then connect it to the end of the chain
+	NodeByName(name string) Builder
+	// GroupByName find the group with the given name, and then perform the NodeGroup operation on it
+	GroupByName(name string) Builder
+	// Build actually connect the nodes with relation described before, any connection outside the builder will be overwritten
+	// parameters are used to configure the network, return the built network, and a map from name to named nodes
 	Build(loopLimit, emptySpinLimit, splitThreshold int) (*Network, map[string]Node)
 }
 
