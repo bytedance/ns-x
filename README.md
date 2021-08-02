@@ -50,14 +50,14 @@ graph LR
 
 Although users can connect nodes manually by modifying next nodes of each node, it's more recommended using a builder. Builder considers the whole network as lots of chains, by describing each chain, the network can be established conveniently. Following are operations of builder: 
 
-* Chain: Save the current chain and begin to describe another chain.
-* Node: Connect the given node to the end of current chain, if the given node has nonempty name, users can reference it by the name later.
-* NodeWithName: Same to *Node* operation, but using the given name instead of node's name.
-* NodeByName: Find a node with the given name, and connect it to the end of current chain.
-* NodeGroup: Given some nodes, perform *Node* operation on each of them with order.
-* NodeGroupWithName: Same to *NodeGroup* operation, but name the whole group so users can reference it by the name later.
-* NodeGroupByName: Find a group with the given name, then perform *NodeGroup* operation on it.
-* Build: Return the built network and a map from name to node, all nodes described previously will actually be connected here, any connection outside the builder will be overwritten.
+* `Chain`: Save the current chain and begin to describe another chain.
+* `Node`: Connect the given node to the end of current chain, if the given node has nonempty name, users can reference it by the name later.
+* `NodeWithName`: Same to *Node* operation, but using the given name instead of node's name.
+* `NodeByName`: Find a node with the given name, and connect it to the end of current chain.
+* `NodeGroup`: Given some nodes, perform *Node* operation on each of them with order.
+* `NodeGroupWithName`: Same to *NodeGroup* operation, but name the whole group so users can reference it by the name later.
+* `NodeGroupByName`: Find a group with the given name, then perform *NodeGroup* operation on it.
+* `Build`: Return the built network and a map from name to node, all nodes described previously will actually be connected here, any connection outside the builder will be overwritten.
 
 ##### Simulating
 
