@@ -33,5 +33,13 @@ func (packet *SimulatedPacket) String() string {
 	builder.WriteString("Loss: ")
 	builder.WriteString(strconv.FormatBool(packet.Loss))
 	builder.WriteRune('\n')
+	builder.WriteString("Where: ")
+	builder.WriteString(packet.Where.Name())
+	builder.WriteRune('\n')
+	builder.WriteString("Target: ")
+	if packet.Actual.Address != nil {
+		builder.WriteString(packet.Actual.Address.String())
+	}
+	builder.WriteRune('\n')
 	return builder.String()
 }
