@@ -41,6 +41,13 @@ Nodes are highly customizable, and some typical nodes are pre-defined:
 * Restrict: a node limits pps or bps by dropping packets when its internal buffer overflows.
 * Scatter: a node selects which node the incoming packet should be route to according to a given rule.
 
+```mermaid
+graph LR
+  Broadcast --> Out1
+  In --> Broadcast --> Out2
+  Broadcast --> Out3
+```
+
 Although users can connect nodes manually by modifying next nodes of each node, it's more recommended using a builder. Builder considers the whole network as lots of chains, by describing each chain, the network can be established conveniently. Following are operations of builder: 
 
 * Chain: Save the current chain and begin to describe another chain.
