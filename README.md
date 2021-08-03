@@ -81,10 +81,9 @@ import (
 	"byte-ns"
 	"math/rand"
 	"runtime"
-	"testing"
 )
 
-func TestBasic(t *testing.T) {
+func main() {
 	source := rand.NewSource(0)
 	random := rand.New(source)
 	helper := byte_ns.NewBuilder()
@@ -178,3 +177,4 @@ Currently, high resolution time is a wrapper of C++ time library. The core desig
 
 * ~~parallelize main loop~~ (done)
 * implement commonly used protocol stack as a new node type
+* separate send and pass to avoid cumulative error
