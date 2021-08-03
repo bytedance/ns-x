@@ -43,9 +43,14 @@ Nodes are highly customizable, and some typical nodes are pre-defined:
 
 ```mermaid
 graph LR
-  Broadcast --> Out1
-  In --> Broadcast --> Out2
-  Broadcast --> Out3
+  In1 --> Channel1 --> Restrict1 --> Router1 --> RouterChannel1 --> Router
+  In2 --> Channel2 --> Restrict2 --> Router2
+  In3 --> Channel3 --> Restrict3 --> Router2
+  In4 --> Channel4 --> Restrict4 --> Router2
+  Router2 --> RouterChannel2 --> Router
+  Router --> Out1
+  Router --> Out2
+  Router --> Out3
 ```
 
 Although users can connect nodes manually by modifying next nodes of each node, it's more recommended using a builder. Builder considers the whole network as lots of chains, by describing each chain, the network can be established conveniently. Following are operations of builder: 
