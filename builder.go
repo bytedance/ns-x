@@ -1,36 +1,47 @@
 package byte_ns
 
 import (
+	"byte-ns/base"
 	"reflect"
 	"strconv"
 	"strings"
 )
 
+// Builder is a convenience tool to describe the whole network and build
 type Builder interface {
-	Node(node Node) Builder
-	Group(nodes ...Node) Builder
-	NodeWithName(name string, node Node) Builder
-	GroupWithName(name string, nodes ...Node) Builder
-	NodeByName(name string) Builder
-	GroupByName(name string) Builder
+	// Chain save the current chain and begin to describe a new chain
 	Chain() Builder
-	Build() (*Network, map[string]Node)
+	// Node connect the given node to the end of current chain, and name it if given node's name is not empty
+	Node(node base.Node) Builder
+	// Group connect the given nodes to the end of current chain one by one in order
+	Group(nodes ...base.Node) Builder
+	// NodeWithName same to Node, but use the given name instead of node's name
+	NodeWithName(name string, node base.Node) Builder
+	// GroupWithName same to Group, but name the whole group with the given name
+	GroupWithName(name string, nodes ...base.Node) Builder
+	// NodeByName find the node with the given name, and then connect it to the end of the chain
+	NodeByName(name string) Builder
+	// GroupByName find the group with the given name, and then perform the NodeGroup operation on it
+	GroupByName(name string) Builder
+	// Build actually connect the nodes with relation described before, any connection outside the builder will be overwritten
+	// parameters are used to configure the network, return the built network, and a map from name to named nodes
+	Build(loopLimit, emptySpinLimit, splitThreshold int) (*Network, map[string]base.Node)
 }
 
 type builder struct {
-	nodes       map[Node]int
-	names       map[string]Node
-	groups      map[string][]Node
-	current     Node
-	connections map[Node]map[Node]interface{}
+	nodes       map[base.Node]int
+	names       map[string]base.Node
+	groups      map[string][]base.Node
+	current     base.Node
+	connections map[base.Node]map[base.Node]interface{}
 }
 
 func NewBuilder() Builder {
 	return &builder{
-		nodes:       map[Node]int{},
-		names:       map[string]Node{},
-		groups:      map[string][]Node{},
-		connections: map[Node]map[Node]interface{}{},
+		nodes:       map[base.Node]int{},
+		names:       map[string]base.Node{},
+		groups:      map[string][]base.Node{},
+		connections: map[base.Node]map[base.Node]interface{}{},
 	}
 }
 
@@ -39,15 +50,15 @@ func (b *builder) Chain() Builder {
 	return b
 }
 
-func (b *builder) Node(node Node) Builder {
+func (b *builder) Node(node base.Node) Builder {
 	return b.NodeWithName(node.Name(), node)
 }
 
-func (b *builder) NodeWithName(name string, node Node) Builder {
+func (b *builder) NodeWithName(name string, node base.Node) Builder {
 	if b.current != nil {
 		connection, ok := b.connections[b.current]
 		if !ok {
-			connection = map[Node]interface{}{}
+			connection = map[base.Node]interface{}{}
 			b.connections[b.current] = connection
 		}
 		connection[node] = nil
@@ -62,11 +73,11 @@ func (b *builder) NodeWithName(name string, node Node) Builder {
 	return b
 }
 
-func (b *builder) Group(nodes ...Node) Builder {
+func (b *builder) Group(nodes ...base.Node) Builder {
 	return b.GroupWithName("", nodes...)
 }
 
-func (b *builder) GroupWithName(name string, nodes ...Node) Builder {
+func (b *builder) GroupWithName(name string, nodes ...base.Node) Builder {
 	if name != "" {
 		b.groups[name] = nodes
 	}
@@ -93,8 +104,8 @@ func (b *builder) GroupByName(name string) Builder {
 	return b.Group(group...)
 }
 
-func (b *builder) Build() (*Network, map[string]Node) {
-	nodes := make([]Node, len(b.nodes))
+func (b *builder) Build(loopLimit, emptySpinLimit, splitThreshold int) (*Network, map[string]base.Node) {
+	nodes := make([]base.Node, len(b.nodes))
 	println("network summary: ")
 	for node, index := range b.nodes {
 		nodes[index] = node
@@ -106,10 +117,10 @@ func (b *builder) Build() (*Network, map[string]Node) {
 		println(b.toString(node, index))
 	}
 	println()
-	return NewNetwork(nodes), b.names
+	return NewNetwork(nodes, loopLimit, emptySpinLimit, splitThreshold), b.names
 }
 
-func (b *builder) toString(node Node, index int) string {
+func (b *builder) toString(node base.Node, index int) string {
 	sb := strings.Builder{}
 	sb.WriteString("node ")
 	sb.WriteString(strconv.Itoa(index))
@@ -131,8 +142,8 @@ func (b *builder) toString(node Node, index int) string {
 	return sb.String()
 }
 
-func normalize(nodes map[Node]interface{}) []Node {
-	result := make([]Node, 0, len(nodes))
+func normalize(nodes map[base.Node]interface{}) []base.Node {
+	result := make([]base.Node, 0, len(nodes))
 	for node := range nodes {
 		result = append(result, node)
 	}

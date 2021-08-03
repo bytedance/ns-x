@@ -1,6 +1,6 @@
 // +build cgo,time_compiled
 
-package byte_ns
+package time
 
 /*
 #cgo CFLAGS: -I${SRCDIR}/cpp

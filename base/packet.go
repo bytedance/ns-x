@@ -1,4 +1,4 @@
-package byte_ns
+package base
 
 import (
 	"net"
@@ -7,13 +7,13 @@ import (
 	"time"
 )
 
-// Packet Indicates an Actual packet, with its data and Address
+// Packet indicates an Actual packet, with its data and Address
 type Packet struct {
 	Data    []byte
 	Address net.Addr
 }
 
-// SimulatedPacket Indicates a simulated packet, with its Actual packet and some simulated environment
+// SimulatedPacket indicates a simulated packet, with its Actual packet and some simulated environment
 type SimulatedPacket struct {
 	Actual   *Packet   // the Actual packet
 	EmitTime time.Time // when this packet is emitted (Where OnEmit a packet means the packet leaves the Where, send to the next Where)
@@ -27,11 +27,19 @@ func (packet *SimulatedPacket) String() string {
 	builder.WriteString("Sent time: ")
 	builder.WriteString(packet.SentTime.String())
 	builder.WriteRune('\n')
-	builder.WriteString("OnEmit time: ")
+	builder.WriteString("Emit time: ")
 	builder.WriteString(packet.EmitTime.String())
 	builder.WriteRune('\n')
 	builder.WriteString("Loss: ")
 	builder.WriteString(strconv.FormatBool(packet.Loss))
+	builder.WriteRune('\n')
+	builder.WriteString("Where: ")
+	builder.WriteString(packet.Where.Name())
+	builder.WriteRune('\n')
+	builder.WriteString("Target: ")
+	if packet.Actual.Address != nil {
+		builder.WriteString(packet.Actual.Address.String())
+	}
 	builder.WriteRune('\n')
 	return builder.String()
 }

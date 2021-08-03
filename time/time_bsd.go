@@ -1,6 +1,6 @@
 // +build cgo,!time_compiled,darwin,amd64 cgo,!time_compiled,freebsd,amd64 cgo,!time_compiled,dragonfly,amd64
 
-package byte_ns
+package time
 
 /*
 #cgo CFLAGS: -I${SRCDIR}/cpp

@@ -1,6 +1,8 @@
-package byte_ns
+package math
 
 import (
+	"byte-ns/base"
+	node2 "byte-ns/node"
 	"math/rand"
 	"time"
 )
@@ -37,11 +39,12 @@ type FixedDelay struct {
 var _ Delay = &FixedDelay{}
 
 // NewFixedDelay 创建一个无分布延迟模型处理函数，average，jitter 单位是 ms
-func NewFixedDelay(average time.Duration, jitter time.Duration) PacketHandler {
+func NewFixedDelay(average time.Duration, jitter time.Duration, random *rand.Rand) node2.PacketHandler {
 	delay := &FixedDelay{
 		&basicDelay{
 			average: average,
 			jitter:  jitter,
+			random:  random,
 		},
 	}
 	return delay.PacketHandler
@@ -51,7 +54,7 @@ func (nd *FixedDelay) Delay() time.Duration {
 	return nd.Average() + nd.Jitter()
 }
 
-func (nd *FixedDelay) PacketHandler(*Packet, *PacketQueue) (time.Duration, bool) {
+func (nd *FixedDelay) PacketHandler(*base.Packet, *base.PacketQueue) (time.Duration, bool) {
 	return nd.Delay(), false
 }
 
@@ -63,7 +66,7 @@ type NormalDelay struct {
 
 var _ Delay = &NormalDelay{}
 
-func NewNormalDelay(average, jitter, sigma time.Duration, random *rand.Rand) PacketHandler {
+func NewNormalDelay(average, jitter, sigma time.Duration, random *rand.Rand) node2.PacketHandler {
 	delay := &NormalDelay{
 		&basicDelay{
 			average: average,
@@ -80,7 +83,7 @@ func (nd *NormalDelay) Delay() time.Duration {
 	return time.Duration(nd.random.NormFloat64()*sigma)*time.Microsecond + nd.Average() + nd.Jitter()
 }
 
-func (nd *NormalDelay) PacketHandler(*Packet, *PacketQueue) (time.Duration, bool) {
+func (nd *NormalDelay) PacketHandler(*base.Packet, *base.PacketQueue) (time.Duration, bool) {
 	return nd.Delay(), false
 }
 
@@ -91,7 +94,7 @@ type UniformDelay struct {
 
 var _ Delay = &UniformDelay{}
 
-func NewUniformDelay(average, jitter time.Duration, random *rand.Rand) PacketHandler {
+func NewUniformDelay(average, jitter time.Duration, random *rand.Rand) node2.PacketHandler {
 	delay := &UniformDelay{
 		&basicDelay{
 			average: average,
@@ -107,6 +110,6 @@ func (ud *UniformDelay) Delay() time.Duration {
 	return time.Duration(ud.random.Float64()*average*2)*time.Microsecond + ud.Jitter()
 }
 
-func (ud *UniformDelay) PacketHandler(*Packet, *PacketQueue) (time.Duration, bool) {
+func (ud *UniformDelay) PacketHandler(*base.Packet, *base.PacketQueue) (time.Duration, bool) {
 	return ud.Delay(), false
 }

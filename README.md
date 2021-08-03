@@ -22,7 +22,7 @@ An easy-to-use, flexible library to simulate network behavior, written mainly in
 #### Prerequisites
 
 - `Go mod` must be supported and enabled.  
-- A platform-specific `binary/*/libtime.a` library is required by cgo for high resolution timer. Its Windows, Linux, and Darwin binaries are pre-built. Compile the library manually if running on another arch/os. (See <a href = "#compile">compile</a> section)    
+- A platform-specific `time/binary/*/libtime.a` library is required by cgo for high resolution timer. Its Windows, Linux, and Darwin binaries are pre-built. Compile the library manually if running on another arch/os. (See <a href = "#compile">compile</a> section)    
 
 #### Usage
 
@@ -41,6 +41,29 @@ Nodes are highly customizable, and some typical nodes are pre-defined:
 * Restrict: a node limits pps or bps by dropping packets when its internal buffer overflows.
 * Scatter: a node selects which node the incoming packet should be route to according to a given rule.
 
+```mermaid
+graph LR
+  In1 --> Channel1 --> Restrict1 --> Router1 --> RouterChannel1 --> Router
+  In2 --> Channel2 --> Restrict2 --> Router2
+  In3 --> Channel3 --> Restrict3 --> Router2
+  In4 --> Channel4 --> Restrict4 --> Router2
+  Router2 --> RouterChannel2 --> Router
+  Router --> Out1
+  Router --> Out2
+  Router --> Out3
+```
+
+Although users can connect nodes manually by modifying next nodes of each node, it's more recommended using a builder. Builder considers the whole network as lots of chains, by describing each chain, the network can be established conveniently. Following are operations of builder: 
+
+* `Chain`: Save the current chain and begin to describe another chain.
+* `Node`: Connect the given node to the end of current chain, if the given node has nonempty name, users can reference it by the name later.
+* `NodeWithName`: Same to *Node* operation, but using the given name instead of node's name.
+* `NodeByName`: Find a node with the given name, and connect it to the end of current chain.
+* `NodeGroup`: Given some nodes, perform *Node* operation on each of them with order.
+* `NodeGroupWithName`: Same to *NodeGroup* operation, but name the whole group so users can reference it by the name later.
+* `NodeGroupByName`: Find a group with the given name, then perform *NodeGroup* operation on it.
+* `Build`: Return the built network and a map from name to node, all nodes described previously will actually be connected here, any connection outside the builder will be overwritten.
+
 ##### Simulating
 
 Once the network is built, packets can be sent into any entry nodes and received from any exit nodes.
@@ -51,15 +74,19 @@ Data could be collected by callback function `node.OnEmitCallback()`. Any furthe
 
 #### Example
 
-A network builder is also provided in order to describe the whole network conveniently.
+Following is an example of a network with two entries, one endpoint and two chains.
 
-Following is an example of sending packets through a simulated channel with `32%` packet loss.
+* Chain 1: entry1 - channel1(with `30%` packet loss) - restrict(1 pps, 1024 bps, buffer limited in 4096 bytes and 5 packets) - endpoint
+* Chain 2: entry2 - channel2(with `10%` packet loss) - endpoint
 
 ```go
 package main
 
 import (
-	"byte_ns"
+	"byte-ns"
+	"byte-ns/base"
+	"byte-ns/math"
+	"byte-ns/node"
 	"math/rand"
 )
 
@@ -67,49 +94,55 @@ func main() {
 	source := rand.NewSource(0)
 	random := rand.New(source)
 	helper := byte_ns.NewBuilder()
-	callback := func(packet *byte_ns.SimulatedPacket) {
-		println("emit packet", packet)
+	callback := func(packet *base.SimulatedPacket) {
+		println("emit packet")
+		println(packet.String())
 	}
-	n1 := byte_ns.NewChannel("entry1", 0, callback, byte_ns.NewRandomLoss(0.3, random))
+	n1 := node.NewChannelNode("entry1", 0, callback, math.NewRandomLoss(0.1, random))
 	network, nodes := helper.
 		Chain().
 		Node(n1).
-		Node(byte_ns.NewRestrict("", 0, nil, 1.0, 1024.0, 4096, 5)).
-		Node(byte_ns.NewEndpoint("endpoint")).
+		Node(node.NewRestrictNode("", 0, nil, 1.0, 1024.0, 8192, 20)).
+		Node(node.NewEndpointNode("endpoint")).
 		Chain().
-		Node(byte_ns.NewChannel("entry2", 0, callback, byte_ns.NewRandomLoss(0.1, random))).
+		Node(node.NewChannelNode("entry2", 0, callback, math.NewRandomLoss(0.1, random))).
 		NodeByName("endpoint").
-		Build()
+		Build(1, 10000, 10)
 	network.Start()
 	defer network.Stop()
 	entry1 := nodes["entry1"]
 	entry2 := nodes["entry2"]
-	endpoint := nodes["endpoint"].(*byte_ns.Endpoint)
-	entry1.Send(&byte_ns.Packet{Data: []byte{0x01, 0x02}})
-	entry1.Send(&byte_ns.Packet{Data: []byte{0x02, 0x03}})
-	entry1.Send(&byte_ns.Packet{Data: []byte{0x03, 0x04}})
-	entry2.Send(&byte_ns.Packet{Data: []byte{0x03, 0x04}})
-	entry2.Send(&byte_ns.Packet{Data: []byte{0x03, 0x04}})
+	endpoint := nodes["endpoint"].(*node.EndpointNode)
+	for i := 0; i < 20; i++ {
+		entry1.Send(&base.Packet{Data: []byte{0x01, 0x02}})
+	}
+	for i := 0; i < 20; i++ {
+		entry2.Send(&base.Packet{Data: []byte{0x01, 0x02}})
+	}
+	count := 0
 	for {
 		packet := endpoint.Receive()
 		if packet != nil {
-			println("receive packet ", packet.String())
+			count++
+			println("receive packet")
+			println(packet.String())
+			println("total", count, "packets received")
 		}
 	}
 }
 ```
 
-#### Compile libtime<span id="compile"/>
+#### Compile from source code<span id="compile"/>
 
 The following library is built successfully on Go v1.16.5, cmake v3.21.0, clang v12.0.5, with C++ 11.
 
 ```bash
-cd cpp
+cd time/cpp
 cmake CMakeLists.txt
 make
 ```
 
-which generates file `libtime.a` under `cpp` directory.
+which generates file `libtime.a` under `time/cpp` directory.
 
 To make the compiled library work, a tag *time_compiled* need to be added to go build.
 
@@ -136,7 +169,9 @@ The loop is separated into two parts: fetch and drain.
 * fetch: The main loop clear the packet buffer of all the nodes, and put these packets into the heap.
 * drain: The main loop drain the heap until the heap only contains packets with emit time after the current time.
 
-By now, the main loop lock a single os thread, but in the future, the main loop may run on a fork join pool.
+~~By now, the main loop lock a single os thread, but in the future, the main loop may run on a fork join pool.~~
+
+Parallelized main loop is already implemented, main loop will split once the packet heap reach a given threshold, and exit after spinning a fixed rounds without any task. The active main loop will always exist but no more than a given limit.
 
 #### High Resolution Time
 
@@ -150,5 +185,6 @@ Currently, high resolution time is a wrapper of C++ time library. The core desig
 
 #### Future work
 
-* parallelize main loop
+* ~~parallelize main loop~~ (done)
 * implement commonly used protocol stack as a new node type
+* separate send and pass to avoid cumulative error

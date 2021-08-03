@@ -1,4 +1,4 @@
-package byte_ns
+package time
 
 import (
 	"github.com/stretchr/testify/assert"

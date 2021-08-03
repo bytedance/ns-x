@@ -1,6 +1,8 @@
-package byte_ns
+package math
 
 import (
+	"byte-ns/base"
+	node2 "byte-ns/node"
 	"math/rand"
 	"time"
 )
@@ -17,7 +19,7 @@ type NoneLoss struct {
 
 var _ Loss = &NoneLoss{}
 
-func NewNoneLoss() PacketHandler {
+func NewNoneLoss() node2.PacketHandler {
 	loss := &NoneLoss{}
 	return loss.PacketHandler
 }
@@ -26,7 +28,7 @@ func (nl *NoneLoss) Loss() bool {
 	return false
 }
 
-func (nl *NoneLoss) PacketHandler(*Packet, *PacketQueue) (time.Duration, bool) {
+func (nl *NoneLoss) PacketHandler(*base.Packet, *base.PacketQueue) (time.Duration, bool) {
 	return 0, nl.Loss()
 }
 
@@ -38,7 +40,7 @@ type RandomLoss struct {
 
 var _ Loss = &RandomLoss{}
 
-func NewRandomLoss(possibility float64, random *rand.Rand) PacketHandler {
+func NewRandomLoss(possibility float64, random *rand.Rand) node2.PacketHandler {
 	loss := &RandomLoss{
 		possibility: possibility,
 		random:      random,
@@ -50,7 +52,7 @@ func (rl *RandomLoss) Loss() bool {
 	return rl.random.Float64() < rl.possibility
 }
 
-func (rl *RandomLoss) PacketHandler(*Packet, *PacketQueue) (time.Duration, bool) {
+func (rl *RandomLoss) PacketHandler(*base.Packet, *base.PacketQueue) (time.Duration, bool) {
 	return 0, rl.Loss()
 }
 
@@ -64,7 +66,7 @@ type GilbertLoss struct {
 
 var _ Loss = &GilbertLoss{}
 
-func NewGilbertLoss(s1Loss, s1Transit, s2Loss, s2Transit float64) PacketHandler {
+func NewGilbertLoss(s1Loss, s1Transit, s2Loss, s2Transit float64) node2.PacketHandler {
 	loss := &GilbertLoss{
 		s1Loss:       s1Loss,
 		s1Transit:    s1Transit,
@@ -88,6 +90,6 @@ func (gl *GilbertLoss) Loss() bool {
 	return gl.random.Float64() < gl.s2Loss
 }
 
-func (gl *GilbertLoss) PacketHandler(*Packet, *PacketQueue) (time.Duration, bool) {
+func (gl *GilbertLoss) PacketHandler(*base.Packet, *base.PacketQueue) (time.Duration, bool) {
 	return 0, gl.Loss()
 }
