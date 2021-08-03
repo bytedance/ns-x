@@ -5,16 +5,16 @@ import (
 	"byte-ns/time"
 )
 
-// Gather ...
-type Gather struct {
+// GatherNode ...
+type GatherNode struct {
 	BasicNode
 }
 
-func NewGather(name string) *Gather {
-	return &Gather{BasicNode{name: name}}
+func NewGatherNode(name string) *GatherNode {
+	return &GatherNode{BasicNode{name: name}}
 }
 
-func (g *Gather) Send(packet *base.Packet) {
+func (g *GatherNode) Send(packet *base.Packet) {
 	t := time.Now()
 	p := &base.SimulatedPacket{
 		Actual:   packet,

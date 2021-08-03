@@ -5,20 +5,20 @@ import (
 	"byte-ns/time"
 )
 
-// Broadcast is a node broadcast any packet pass by to all its next node
+// BroadcastNode is a node broadcast any packet pass by to all its next node
 // Although some other nodes have the same behavior, broadcast node is designed as a transparent node to avoid side effects.
-type Broadcast struct {
+type BroadcastNode struct {
 	BasicNode
 }
 
-// NewBroadcast creates a new Broadcast with given Node(s)
-func NewBroadcast(name string, callback base.OnEmitCallback) *Broadcast {
-	return &Broadcast{
+// NewBroadcastNode creates a new BroadcastNode with given Node(s)
+func NewBroadcastNode(name string, callback base.OnEmitCallback) *BroadcastNode {
+	return &BroadcastNode{
 		BasicNode: *NewBasicNode(name, 0, callback),
 	}
 }
 
-func (b *Broadcast) Send(packet *base.Packet) {
+func (b *BroadcastNode) Send(packet *base.Packet) {
 	for _, n := range b.next {
 		n.Send(packet)
 	}

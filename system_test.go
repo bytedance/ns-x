@@ -16,21 +16,21 @@ func TestBasic(t *testing.T) {
 		//println("emit packet")
 		//println(packet.String())
 	}
-	n1 := node2.NewChannel("entry1", 0, callback, math.NewRandomLoss(0.1, random))
+	n1 := node2.NewChannelNode("entry1", 0, callback, math.NewRandomLoss(0.1, random))
 	network, nodes := helper.
 		Chain().
 		Node(n1).
-		Node(node2.NewRestrict("", 0, nil, 1.0, 1024.0, 8192, 20)).
-		Node(node2.NewEndpoint("endpoint")).
+		Node(node2.NewRestrictNode("", 0, nil, 1.0, 1024.0, 8192, 20)).
+		Node(node2.NewEndpointNode("endpoint")).
 		Chain().
-		Node(node2.NewChannel("entry2", 0, callback, math.NewRandomLoss(0.1, random))).
+		Node(node2.NewChannelNode("entry2", 0, callback, math.NewRandomLoss(0.1, random))).
 		NodeByName("endpoint").
 		Build(1, 10000, 10)
 	network.Start()
 	defer network.Stop()
 	entry1 := nodes["entry1"]
 	entry2 := nodes["entry2"]
-	endpoint := nodes["endpoint"].(*node2.Endpoint)
+	endpoint := nodes["endpoint"].(*node2.EndpointNode)
 	for i := 0; i < 20; i++ {
 		entry1.Send(&base.Packet{Data: []byte{0x01, 0x02}})
 	}

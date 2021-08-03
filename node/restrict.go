@@ -8,11 +8,11 @@ import (
 	"time"
 )
 
-// Restrict simulate a node with limited ability
-// Once Packets through a Restrict reaches the limit(in bps or pps), the later Packets will be put in a buffer
+// RestrictNode simulate a node with limited ability
+// Once Packets through a RestrictNode reaches the limit(in bps or pps), the later Packets will be put in a buffer
 // Once the buffer overflow, later Packets will be discarded
 // The the buffer limit will not be accurate, usually a little lower than specified, since it takes time(usually less than microseconds) to send Packets
-type Restrict struct {
+type RestrictNode struct {
 	BasicNode
 	ppsLimit, bpsLimit                float64
 	bufferSizeLimit, bufferCountLimit int64
@@ -20,14 +20,14 @@ type Restrict struct {
 	emitTime                          time.Time
 }
 
-// NewRestrict create a new restrict with the given parameter
+// NewRestrictNode create a new restrict with the given parameter
 // next, recordSize, onEmitCallback the same as BasicNode
 // ppsLimit, bpsLimit: the limit of Packets per second/bytes per second
 // bufferSizeLimit, bufferCountLimit: the limit of waiting Packets, in bytes/Packets
-func NewRestrict(name string, recordSize int, onEmitCallback base.OnEmitCallback,
+func NewRestrictNode(name string, recordSize int, onEmitCallback base.OnEmitCallback,
 	ppsLimit, bpsLimit float64,
-	bufferSizeLimit, bufferCountLimit int64) *Restrict {
-	return &Restrict{
+	bufferSizeLimit, bufferCountLimit int64) *RestrictNode {
+	return &RestrictNode{
 		BasicNode:        *NewBasicNode(name, recordSize, onEmitCallback),
 		ppsLimit:         ppsLimit,
 		bpsLimit:         bpsLimit,
@@ -39,13 +39,13 @@ func NewRestrict(name string, recordSize int, onEmitCallback base.OnEmitCallback
 	}
 }
 
-func (r *Restrict) Emit(packet *base.SimulatedPacket) {
+func (r *RestrictNode) Emit(packet *base.SimulatedPacket) {
 	r.BasicNode.Emit(packet)
 	r.bufferSize.Sub(int64(len(packet.Actual.Data)))
 	r.bufferCount.Dec()
 }
 
-func (r *Restrict) Send(packet *base.Packet) {
+func (r *RestrictNode) Send(packet *base.Packet) {
 	if r.bufferSize.Load() >= r.bufferSizeLimit || r.bufferCount.Load() >= r.bufferCountLimit {
 		return
 	}

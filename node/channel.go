@@ -23,21 +23,21 @@ func Combine(handlers ...PacketHandler) PacketHandler {
 	}
 }
 
-// Channel is a simulated network channel with loss, delay and reorder features
-type Channel struct {
+// ChannelNode is a simulated network channel with loss, delay and reorder features
+type ChannelNode struct {
 	BasicNode
 	handler PacketHandler
 }
 
-// NewChannel creates a new channel
-func NewChannel(name string, recordSize int, onEmitCallback base.OnEmitCallback, handler PacketHandler) *Channel {
-	return &Channel{
+// NewChannelNode creates a new channel
+func NewChannelNode(name string, recordSize int, onEmitCallback base.OnEmitCallback, handler PacketHandler) *ChannelNode {
+	return &ChannelNode{
 		BasicNode: *NewBasicNode(name, recordSize, onEmitCallback),
 		handler:   handler,
 	}
 }
 
-func (c *Channel) Send(packet *base.Packet) {
+func (c *ChannelNode) Send(packet *base.Packet) {
 	now := time2.Now()
 	t := now
 	l := false

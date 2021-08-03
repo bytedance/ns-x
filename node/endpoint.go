@@ -7,22 +7,22 @@ import (
 
 const preserveBufferSize = 10
 
-// Endpoint is a node to receive Packets, Packets reached an endpoint will no longer be transmitted
-type Endpoint struct {
+// EndpointNode is a node to receive Packets, Packets reached an endpoint will no longer be transmitted
+type EndpointNode struct {
 	BasicNode
 	concurrentBuffer *base.PacketBuffer
 	localBuffer      []*base.SimulatedPacket
 }
 
-func NewEndpoint(name string) *Endpoint {
-	return &Endpoint{
+func NewEndpointNode(name string) *EndpointNode {
+	return &EndpointNode{
 		BasicNode:        BasicNode{name: name},
 		concurrentBuffer: base.NewPacketBuffer(),
 		localBuffer:      make([]*base.SimulatedPacket, 0, preserveBufferSize),
 	}
 }
 
-func (e *Endpoint) Send(packet *base.Packet) {
+func (e *EndpointNode) Send(packet *base.Packet) {
 	t := time.Now()
 	p := &base.SimulatedPacket{
 		Actual:   packet,
@@ -36,7 +36,7 @@ func (e *Endpoint) Send(packet *base.Packet) {
 }
 
 // Receive a packet if possible, nil otherwise
-func (e *Endpoint) Receive() *base.SimulatedPacket {
+func (e *EndpointNode) Receive() *base.SimulatedPacket {
 	if len(e.localBuffer) == 0 {
 		e.concurrentBuffer.Reduce(func(packet *base.SimulatedPacket) {
 			e.localBuffer = append(e.localBuffer, packet)
