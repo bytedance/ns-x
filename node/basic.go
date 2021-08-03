@@ -4,7 +4,7 @@ import (
 	"byte-ns/base"
 )
 
-// BasicNode implements a basic Node
+// BasicNode is skeleton implementation of Node
 type BasicNode struct {
 	name           string
 	next           []base.Node
