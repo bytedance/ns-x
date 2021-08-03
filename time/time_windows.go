@@ -1,6 +1,6 @@
 // +build cgo,!time_compiled,windows,amd64
 
-package base
+package time
 
 /*
 #cgo CFLAGS: -I${SRCDIR}/cpp

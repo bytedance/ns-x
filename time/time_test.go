@@ -1,4 +1,4 @@
-package base
+package time
 
 import (
 	"github.com/stretchr/testify/assert"

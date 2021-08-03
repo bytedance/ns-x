@@ -2,6 +2,7 @@ package node
 
 import (
 	"byte-ns/base"
+	time2 "byte-ns/time"
 	"go.uber.org/atomic"
 	"math"
 	"time"
@@ -34,7 +35,7 @@ func NewRestrict(name string, recordSize int, onEmitCallback base.OnEmitCallback
 		bufferCountLimit: bufferCountLimit,
 		bufferSize:       atomic.NewInt64(0),
 		bufferCount:      atomic.NewInt64(0),
-		emitTime:         base.Now(),
+		emitTime:         time2.Now(),
 	}
 }
 
@@ -48,7 +49,7 @@ func (r *Restrict) Send(packet *base.Packet) {
 	if r.bufferSize.Load() >= r.bufferSizeLimit || r.bufferCount.Load() >= r.bufferCountLimit {
 		return
 	}
-	sentTime := base.Now()
+	sentTime := time2.Now()
 	if r.emitTime.Before(sentTime) {
 		r.emitTime = sentTime
 	}

@@ -2,6 +2,7 @@ package node
 
 import (
 	"byte-ns/base"
+	"byte-ns/time"
 )
 
 const preserveBufferSize = 10
@@ -22,7 +23,7 @@ func NewEndpoint(name string) *Endpoint {
 }
 
 func (e *Endpoint) Send(packet *base.Packet) {
-	t := base.Now()
+	t := time.Now()
 	p := &base.SimulatedPacket{
 		Actual:   packet,
 		SentTime: t,

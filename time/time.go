@@ -1,10 +1,10 @@
-// +build cgo,!time_compiled,linux,amd64
+// +build cgo,time_compiled
 
-package base
+package time
 
 /*
 #cgo CFLAGS: -I${SRCDIR}/cpp
-#cgo LDFLAGS: -L${SRCDIR}/binary/linux -ltime -lstdc++
+#cgo LDFLAGS: -L${SRCDIR}/cpp -ltime -lstdc++
 #include "cpp/library.h"
 */
 import "C"

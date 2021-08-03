@@ -2,6 +2,7 @@ package node
 
 import (
 	"byte-ns/base"
+	"byte-ns/time"
 )
 
 // Gather ...
@@ -14,7 +15,7 @@ func NewGather(name string) *Gather {
 }
 
 func (g *Gather) Send(packet *base.Packet) {
-	t := base.Now()
+	t := time.Now()
 	p := &base.SimulatedPacket{
 		Actual:   packet,
 		SentTime: t,

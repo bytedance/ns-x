@@ -2,6 +2,7 @@ package node
 
 import (
 	"byte-ns/base"
+	"byte-ns/time"
 )
 
 // Broadcast is a node broadcast any packet pass by to all its next node
@@ -21,7 +22,7 @@ func (b *Broadcast) Send(packet *base.Packet) {
 	for _, n := range b.next {
 		n.Send(packet)
 	}
-	t := base.Now()
+	t := time.Now()
 	p := &base.SimulatedPacket{
 		Actual:   packet,
 		EmitTime: t,

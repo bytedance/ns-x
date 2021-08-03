@@ -2,6 +2,7 @@ package byte_ns
 
 import (
 	"byte-ns/base"
+	"byte-ns/time"
 	"container/heap"
 	"go.uber.org/atomic"
 	"runtime"
@@ -51,7 +52,7 @@ func (n *Network) fetch(packetHeap heap.Interface) bool {
 // drain Drain the given heap if possible, and OnEmit the Packets available
 func (n *Network) drain(packetHeap *base.PacketHeap) bool {
 	flag := false
-	t := base.Now()
+	t := time.Now()
 	for !packetHeap.IsEmpty() {
 		p := packetHeap.Peek()
 		if p.EmitTime.After(t) {

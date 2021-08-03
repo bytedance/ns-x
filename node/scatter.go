@@ -2,6 +2,7 @@ package node
 
 import (
 	"byte-ns/base"
+	"byte-ns/time"
 )
 
 // PathSelector is rule of how to select the path of packet
@@ -21,7 +22,7 @@ func NewScatter(name string, selector PathSelector) *Scatter {
 }
 
 func (s *Scatter) Send(packet *base.Packet) {
-	t := base.Now()
+	t := time.Now()
 	p := &base.SimulatedPacket{
 		Actual:   packet,
 		EmitTime: t,
