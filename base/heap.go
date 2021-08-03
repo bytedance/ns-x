@@ -1,8 +1,8 @@
-package byte_ns
+package base
 
 // PacketHeap ...
 type PacketHeap struct {
-	storage []*SimulatedPacket
+	Storage []*SimulatedPacket
 }
 
 func (q *PacketHeap) IsEmpty() bool {
@@ -10,24 +10,24 @@ func (q *PacketHeap) IsEmpty() bool {
 }
 
 func (q *PacketHeap) Less(i, j int) bool {
-	return q.storage[i].EmitTime.Before(q.storage[j].EmitTime)
+	return q.Storage[i].EmitTime.Before(q.Storage[j].EmitTime)
 }
 
 func (q *PacketHeap) Len() int {
-	return len(q.storage)
+	return len(q.Storage)
 }
 
 func (q *PacketHeap) Swap(i, j int) {
-	q.storage[i], q.storage[j] = q.storage[j], q.storage[i]
+	q.Storage[i], q.Storage[j] = q.Storage[j], q.Storage[i]
 }
 
 func (q *PacketHeap) Push(x interface{}) {
-	q.storage = append(q.storage, x.(*SimulatedPacket))
+	q.Storage = append(q.Storage, x.(*SimulatedPacket))
 }
 
 func (q *PacketHeap) Pop() interface{} {
-	x := q.storage[q.Len()-1]
-	q.storage = q.storage[:q.Len()-1]
+	x := q.Storage[q.Len()-1]
+	q.Storage = q.Storage[:q.Len()-1]
 	return x
 }
 
@@ -35,5 +35,5 @@ func (q *PacketHeap) Peek() *SimulatedPacket {
 	if q.IsEmpty() {
 		return nil
 	}
-	return q.storage[0]
+	return q.Storage[0]
 }

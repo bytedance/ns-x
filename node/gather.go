@@ -1,4 +1,8 @@
-package byte_ns
+package node
+
+import (
+	"byte-ns/base"
+)
 
 // Gather ...
 type Gather struct {
@@ -9,9 +13,9 @@ func NewGather(name string) *Gather {
 	return &Gather{BasicNode{name: name}}
 }
 
-func (g *Gather) Send(packet *Packet) {
-	t := Now()
-	p := &SimulatedPacket{
+func (g *Gather) Send(packet *base.Packet) {
+	t := base.Now()
+	p := &base.SimulatedPacket{
 		Actual:   packet,
 		SentTime: t,
 		EmitTime: t,

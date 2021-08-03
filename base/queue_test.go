@@ -1,4 +1,4 @@
-package byte_ns
+package base
 
 import (
 	"github.com/stretchr/testify/assert"

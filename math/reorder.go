@@ -1,13 +1,15 @@
-package byte_ns
+package math
 
 import (
+	"byte-ns/base"
+	node2 "byte-ns/node"
 	"math/rand"
 	"time"
 )
 
-// Reorderer 接口，目前有不乱序，概率乱序，gap乱序三种模型
-type Reorderer interface {
-	// Reorderer 返回需要增加的延迟时间 (可能为负值)，通过将该包更"早"发送实现乱序
+// Reorder 接口，目前有不乱序，概率乱序，gap乱序三种模型
+type Reorder interface {
+	// Reorder 返回需要增加的延迟时间 (可能为负值)，通过将该包更"早"发送实现乱序
 	Reorder() time.Duration
 }
 
@@ -15,9 +17,9 @@ type Reorderer interface {
 type NoneReorder struct {
 }
 
-var _ Reorderer = &NoneReorder{}
+var _ Reorder = &NoneReorder{}
 
-func NewNoneReorder() PacketHandler {
+func NewNoneReorder() node2.PacketHandler {
 	reorder := &NoneReorder{}
 	return reorder.PacketHandler
 }
@@ -26,7 +28,7 @@ func (nr *NoneReorder) Reorder() time.Duration {
 	return 0
 }
 
-func (nr *NoneReorder) PacketHandler(*Packet, *PacketQueue) (time.Duration, bool) {
+func (nr *NoneReorder) PacketHandler(*base.Packet, *base.PacketQueue) (time.Duration, bool) {
 	return nr.Reorder(), false
 }
 
@@ -41,9 +43,9 @@ type NormalReorder struct {
 	random      *rand.Rand
 }
 
-var _ Reorderer = &NormalReorder{}
+var _ Reorder = &NormalReorder{}
 
-func NewNormalReorder(delay time.Duration, possibility, correlation float64, random *rand.Rand) PacketHandler {
+func NewNormalReorder(delay time.Duration, possibility, correlation float64, random *rand.Rand) node2.PacketHandler {
 	reorder := &NormalReorder{
 		delay:       delay,
 		possibility: possibility,
@@ -69,7 +71,7 @@ func (nr *NormalReorder) Reorder() time.Duration {
 	return 0
 }
 
-func (nr *NormalReorder) PacketHandler(*Packet, *PacketQueue) (time.Duration, bool) {
+func (nr *NormalReorder) PacketHandler(*base.Packet, *base.PacketQueue) (time.Duration, bool) {
 	return nr.Reorder(), false
 }
 
@@ -85,10 +87,10 @@ type GapReorder struct {
 	random      *rand.Rand
 }
 
-var _ Reorderer = &GapReorder{}
+var _ Reorder = &GapReorder{}
 
 func NewGapReorder(delay time.Duration, possibility,
-	correlation float64, gap int, random *rand.Rand) PacketHandler {
+	correlation float64, gap int, random *rand.Rand) node2.PacketHandler {
 	reorder := &GapReorder{
 		delay:       delay,
 		possibility: possibility,
@@ -121,6 +123,6 @@ func (gr *GapReorder) Reorder() time.Duration {
 	return 0
 }
 
-func (gr *GapReorder) PacketHandler(*Packet, *PacketQueue) (time.Duration, bool) {
+func (gr *GapReorder) PacketHandler(*base.Packet, *base.PacketQueue) (time.Duration, bool) {
 	return gr.Reorder(), false
 }

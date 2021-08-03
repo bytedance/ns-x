@@ -1,4 +1,4 @@
-package byte_ns
+package base
 
 // PacketQueue is a ring queue of fixed size, it's usually used as a history record of packets sent in the past
 type PacketQueue struct {

@@ -1,6 +1,7 @@
 package byte_ns
 
 import (
+	"byte-ns/base"
 	"container/heap"
 	"go.uber.org/atomic"
 	"runtime"
@@ -8,7 +9,7 @@ import (
 
 // Network Indicates a simulated network, which contains some simulated nodes
 type Network struct {
-	nodes          []Node
+	nodes          []base.Node
 	running        *atomic.Bool
 	runningCount   *atomic.Int32
 	loopLimit      int
@@ -20,7 +21,7 @@ type Network struct {
 // loopLimit is the limit of parallelized main loops count
 // a main loop will exit once spun emptySpinLimit rounds doing nothing
 // a main loop will try to split into two loops once count of packets waiting to handle reach splitThreshold
-func NewNetwork(nodes []Node, loopLimit, emptySpinLimit, splitThreshold int) *Network {
+func NewNetwork(nodes []base.Node, loopLimit, emptySpinLimit, splitThreshold int) *Network {
 	return &Network{
 		nodes:          nodes,
 		running:        atomic.NewBool(false),
@@ -39,7 +40,7 @@ func (n *Network) fetch(packetHeap heap.Interface) bool {
 		if buffer == nil {
 			continue
 		}
-		buffer.Reduce(func(packet *SimulatedPacket) {
+		buffer.Reduce(func(packet *base.SimulatedPacket) {
 			heap.Push(packetHeap, packet)
 			flag = true
 		})
@@ -48,9 +49,9 @@ func (n *Network) fetch(packetHeap heap.Interface) bool {
 }
 
 // drain Drain the given heap if possible, and OnEmit the Packets available
-func (n *Network) drain(packetHeap *PacketHeap) bool {
+func (n *Network) drain(packetHeap *base.PacketHeap) bool {
 	flag := false
-	t := Now()
+	t := base.Now()
 	for !packetHeap.IsEmpty() {
 		p := packetHeap.Peek()
 		if p.EmitTime.After(t) {
@@ -63,18 +64,18 @@ func (n *Network) drain(packetHeap *PacketHeap) bool {
 	return flag
 }
 
-func (n *Network) clear(packetHeap *PacketHeap) {
+func (n *Network) clear(packetHeap *base.PacketHeap) {
 	for !packetHeap.IsEmpty() {
 		n.drain(packetHeap)
 	}
 }
 
-func (n *Network) split(packetHeap *PacketHeap) {
+func (n *Network) split(packetHeap *base.PacketHeap) {
 	count := n.runningCount.Inc()
 	if int(count) <= n.loopLimit {
 		length := packetHeap.Len()
-		h := &PacketHeap{packetHeap.storage[length/2:]}
-		packetHeap.storage = packetHeap.storage[:length/2]
+		h := &base.PacketHeap{Storage: packetHeap.Storage[length/2:]}
+		packetHeap.Storage = packetHeap.Storage[:length/2]
 		heap.Init(packetHeap)
 		heap.Init(h)
 		go n.mainLoop(h, count)
@@ -84,7 +85,7 @@ func (n *Network) split(packetHeap *PacketHeap) {
 }
 
 // mainLoop Main polling loop of network
-func (n *Network) mainLoop(packetHeap *PacketHeap, index int32) {
+func (n *Network) mainLoop(packetHeap *base.PacketHeap, index int32) {
 	println("network main loop start #", index)
 	runtime.LockOSThread()
 	defer runtime.UnlockOSThread()
@@ -122,7 +123,7 @@ func (n *Network) Start() {
 	}
 	n.running.Store(true)
 	n.runningCount.Inc()
-	go n.mainLoop(&PacketHeap{}, 1)
+	go n.mainLoop(&base.PacketHeap{}, 1)
 }
 
 // Stop the network, release resources

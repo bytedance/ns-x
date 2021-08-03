@@ -1,25 +1,29 @@
-package byte_ns
+package node
+
+import (
+	"byte-ns/base"
+)
 
 const preserveBufferSize = 10
 
 // Endpoint is a node to receive Packets, Packets reached an endpoint will no longer be transmitted
 type Endpoint struct {
 	BasicNode
-	concurrentBuffer *PacketBuffer
-	localBuffer      []*SimulatedPacket
+	concurrentBuffer *base.PacketBuffer
+	localBuffer      []*base.SimulatedPacket
 }
 
 func NewEndpoint(name string) *Endpoint {
 	return &Endpoint{
 		BasicNode:        BasicNode{name: name},
-		concurrentBuffer: NewPacketBuffer(),
-		localBuffer:      make([]*SimulatedPacket, 0, preserveBufferSize),
+		concurrentBuffer: base.NewPacketBuffer(),
+		localBuffer:      make([]*base.SimulatedPacket, 0, preserveBufferSize),
 	}
 }
 
-func (e *Endpoint) Send(packet *Packet) {
-	t := Now()
-	p := &SimulatedPacket{
+func (e *Endpoint) Send(packet *base.Packet) {
+	t := base.Now()
+	p := &base.SimulatedPacket{
 		Actual:   packet,
 		SentTime: t,
 		EmitTime: t,
@@ -31,9 +35,9 @@ func (e *Endpoint) Send(packet *Packet) {
 }
 
 // Receive a packet if possible, nil otherwise
-func (e *Endpoint) Receive() *SimulatedPacket {
+func (e *Endpoint) Receive() *base.SimulatedPacket {
 	if len(e.localBuffer) == 0 {
-		e.concurrentBuffer.Reduce(func(packet *SimulatedPacket) {
+		e.concurrentBuffer.Reduce(func(packet *base.SimulatedPacket) {
 			e.localBuffer = append(e.localBuffer, packet)
 		})
 	}

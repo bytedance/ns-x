@@ -1,4 +1,4 @@
-package byte_ns
+package base
 
 // Node Indicates a simulated node in the network
 type Node interface {

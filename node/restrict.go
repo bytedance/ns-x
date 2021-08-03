@@ -1,6 +1,7 @@
-package byte_ns
+package node
 
 import (
+	"byte-ns/base"
 	"go.uber.org/atomic"
 	"math"
 	"time"
@@ -22,7 +23,7 @@ type Restrict struct {
 // next, recordSize, onEmitCallback the same as BasicNode
 // ppsLimit, bpsLimit: the limit of Packets per second/bytes per second
 // bufferSizeLimit, bufferCountLimit: the limit of waiting Packets, in bytes/Packets
-func NewRestrict(name string, recordSize int, onEmitCallback OnEmitCallback,
+func NewRestrict(name string, recordSize int, onEmitCallback base.OnEmitCallback,
 	ppsLimit, bpsLimit float64,
 	bufferSizeLimit, bufferCountLimit int64) *Restrict {
 	return &Restrict{
@@ -33,26 +34,26 @@ func NewRestrict(name string, recordSize int, onEmitCallback OnEmitCallback,
 		bufferCountLimit: bufferCountLimit,
 		bufferSize:       atomic.NewInt64(0),
 		bufferCount:      atomic.NewInt64(0),
-		emitTime:         Now(),
+		emitTime:         base.Now(),
 	}
 }
 
-func (r *Restrict) Emit(packet *SimulatedPacket) {
+func (r *Restrict) Emit(packet *base.SimulatedPacket) {
 	r.BasicNode.Emit(packet)
 	r.bufferSize.Sub(int64(len(packet.Actual.Data)))
 	r.bufferCount.Dec()
 }
 
-func (r *Restrict) Send(packet *Packet) {
+func (r *Restrict) Send(packet *base.Packet) {
 	if r.bufferSize.Load() >= r.bufferSizeLimit || r.bufferCount.Load() >= r.bufferCountLimit {
 		return
 	}
-	sentTime := Now()
+	sentTime := base.Now()
 	if r.emitTime.Before(sentTime) {
 		r.emitTime = sentTime
 	}
 	emitTime := r.emitTime
-	p := &SimulatedPacket{Actual: packet, EmitTime: emitTime, SentTime: sentTime, Loss: false, Where: r}
+	p := &base.SimulatedPacket{Actual: packet, EmitTime: emitTime, SentTime: sentTime, Loss: false, Where: r}
 	step := math.Max(1.0/r.ppsLimit, float64(len(packet.Data))/r.bpsLimit)
 	r.emitTime = emitTime.Add(time.Duration(step*1000*1000) * time.Microsecond)
 	r.bufferSize.Add(int64(len(packet.Data)))

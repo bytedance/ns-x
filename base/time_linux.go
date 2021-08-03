@@ -1,10 +1,10 @@
-// +build cgo,time_compiled
+// +build cgo,!time_compiled,linux,amd64
 
-package byte_ns
+package base
 
 /*
 #cgo CFLAGS: -I${SRCDIR}/cpp
-#cgo LDFLAGS: -L${SRCDIR}/cpp -ltime -lstdc++
+#cgo LDFLAGS: -L${SRCDIR}/binary/linux -ltime -lstdc++
 #include "cpp/library.h"
 */
 import "C"

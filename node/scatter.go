@@ -1,7 +1,11 @@
-package byte_ns
+package node
+
+import (
+	"byte-ns/base"
+)
 
 // PathSelector is rule of how to select the path of packet
-type PathSelector func(packet *SimulatedPacket, record *PacketQueue, nodes []Node) Node
+type PathSelector func(packet *base.SimulatedPacket, record *base.PacketQueue, nodes []base.Node) base.Node
 
 // Scatter transfer packet pass by to one of its next nodes according to a given rule
 type Scatter struct {
@@ -16,9 +20,9 @@ func NewScatter(name string, selector PathSelector) *Scatter {
 	}
 }
 
-func (s *Scatter) Send(packet *Packet) {
-	t := Now()
-	p := &SimulatedPacket{
+func (s *Scatter) Send(packet *base.Packet) {
+	t := base.Now()
+	p := &base.SimulatedPacket{
 		Actual:   packet,
 		EmitTime: t,
 		SentTime: t,
