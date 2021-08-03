@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestRecord1(t *testing.T) {
+func TestQueue(t *testing.T) {
 	length := 1000
 	it := 0
 	ring := NewPacketQueue(length)
