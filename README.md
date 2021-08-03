@@ -22,7 +22,7 @@ An easy-to-use, flexible library to simulate network behavior, written mainly in
 #### Prerequisites
 
 - `Go mod` must be supported and enabled.  
-- A platform-specific `binary/*/libtime.a` library is required by cgo for high resolution timer. Its Windows, Linux, and Darwin binaries are pre-built. Compile the library manually if running on another arch/os. (See <a href = "#compile">compile</a> section)    
+- A platform-specific `time/binary/*/libtime.a` library is required by cgo for high resolution timer. Its Windows, Linux, and Darwin binaries are pre-built. Compile the library manually if running on another arch/os. (See <a href = "#compile">compile</a> section)    
 
 #### Usage
 
@@ -132,12 +132,12 @@ func main() {
 The following library is built successfully on Go v1.16.5, cmake v3.21.0, clang v12.0.5, with C++ 11.
 
 ```bash
-cd cpp
+cd time/cpp
 cmake CMakeLists.txt
 make
 ```
 
-which generates file `libtime.a` under `cpp` directory.
+which generates file `libtime.a` under `time/cpp` directory.
 
 To make the compiled library work, a tag *time_compiled* need to be added to go build.
 
