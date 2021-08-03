@@ -35,22 +35,51 @@ The network is built by nodes and chains (i.e., edges in the network graph). Nor
 Nodes are highly customizable, and some typical nodes are pre-defined:   
 
 * Broadcast: a node transfers packet from one source to multiple targets.
+
+    ```mermaid
+    graph LR
+      In ==> Broadcast --> Out1
+      Broadcast --> Out2
+      Broadcast --> Out3
+    ```
+
 * Channel: a node delays, losses or reorders packets passing by.
+
+    ```mermaid
+    graph LR
+      In --> Channel -->|Loss & Delay & Reorder| Out
+    ```
+
 * Endpoint: a node only accepts incoming packets, usually acting as the end of a chain.
+
+    ```mermaid
+    graph LR
+      Nodes... --> Endpoint
+    ```
+
 * Gather: a node gathers packets from multiple sources to a single target.
+
+    ```mermaid
+    graph LR
+      In1 --> Gather ==> Out
+      In2 --> Gather
+      In3 --> Gather
+    ```
+
 * Restrict: a node limits pps or bps by dropping packets when its internal buffer overflows.
+
+    ```mermaid
+    graph LR
+      In --> Restrict -->|Restricted Speed| Out
+    ```
+
 * Scatter: a node selects which node the incoming packet should be route to according to a given rule.
 
 ```mermaid
 graph LR
-  In1 --> Channel1 --> Restrict1 --> Router1 --> RouterChannel1 --> Router
-  In2 --> Channel2 --> Restrict2 --> Router2
-  In3 --> Channel3 --> Restrict3 --> Router2
-  In4 --> Channel4 --> Restrict4 --> Router2
-  Router2 --> RouterChannel2 --> Router
-  Router --> Out1
-  Router --> Out2
-  Router --> Out3
+  In --> Scatter -.-> Out1
+  Scatter -->|Selected Route| Out2
+  Scatter -.-> Out3
 ```
 
 Although users can connect nodes manually by modifying next nodes of each node, it's more recommended using a builder. Builder considers the whole network as lots of chains, by describing each chain, the network can be established conveniently. Following are operations of builder: 
