@@ -16,6 +16,10 @@ type Network struct {
 	splitThreshold int
 }
 
+// NewNetwork creates a network with the given nodes, connections of nodes should be already established.
+// loopLimit is the limit of parallelized main loops count
+// a main loop will exit once spun emptySpinLimit rounds doing nothing
+// a main loop will try to split into two loops once count of packets waiting to handle reach splitThreshold
 func NewNetwork(nodes []Node, loopLimit, emptySpinLimit, splitThreshold int) *Network {
 	return &Network{
 		nodes:          nodes,
