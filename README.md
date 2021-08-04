@@ -13,26 +13,26 @@ An easy-to-use, flexible library to simulate network behavior, written mainly in
 
 #### Concept
 
-* Network: a topological graph consist of *node*s, reflecting a real-world network for packets to transfer through.
-* Node: a physical or logical device in the *network* allowing *packet*s to enter and leave. A *node* usually chains other *Node*s to build the network.
+* Network: a topological graph consist of *node*s, reflecting a real-world network for *packets* to transfer through.
+* Node: a physical or logical device in the *network* allowing *packet*s to enter and leave. A *node* usually *connects* to other *node*s. 
 * Packet: simulated data packets transferring between *node*s, carrying the actual packet data with additional simulator information.
-* Send: (*packet*s) to enter a node, waiting to *emit*.
+* Send: (*packet*s) to enter a *node*, waiting to *emit*.
 * Emit: (*packet*s) to leave a *node* toward the next chained *node*.
 
 #### Prerequisites
 
-- `Go mod` must be supported and enabled.  
+- `go mod` must be supported and enabled.  
 - A platform-specific `time/binary/*/libtime.a` library is required by cgo for high resolution timer. Its Windows, Linux, and Darwin binaries are pre-built. Compile the library manually if running on another arch/os. (See <a href = "#compile">compile</a> section)    
 
 #### Usage
 
-Follow three steps: building network, simulating, and collecting data.
+Follow three steps: building network, starting network simulation, and collecting data.
 
 ##### Building network
 
-The network is built by nodes and chains (i.e., edges in the network graph). Normally a chain connects only two nodes, each on one end. For special cases a chain may have multiple node or no node on its ends.  
+The network is built by *node*s and *edge*s. Normally an *edge* connects only two nodes, each on one end. For special cases a chain may have multiple node or no node on its ends.  
 
-Nodes are highly customizable, and some typical nodes are pre-defined:   
+While nodes are highly customizable, some typical nodes are pre-defined as follows:
 
 * Broadcast: a node transfers packet from one source to multiple targets.
 
@@ -82,31 +82,36 @@ graph LR
   Scatter -.-> Out3
 ```
 
-Although users can connect nodes manually by modifying next nodes of each node, it's more recommended using a builder. Builder considers the whole network as lots of chains, by describing each chain, the network can be established conveniently. Following are operations of builder: 
+After all necessary *node*s created, *connect* them to build the network. To do so, just set the *next node* correctly for each *node* to declare the *edge*. 
 
-* `Chain`: Save the current chain and begin to describe another chain.
-* `Node`: Connect the given node to the end of current chain, if the given node has nonempty name, users can reference it by the name later.
-* `NodeWithName`: Same to *Node* operation, but using the given name instead of node's name.
-* `NodeByName`: Find a node with the given name, and connect it to the end of current chain.
-* `NodeGroup`: Given some nodes, perform *Node* operation on each of them with order.
-* `NodeGroupWithName`: Same to *NodeGroup* operation, but name the whole group so users can reference it by the name later.
-* `NodeGroupByName`: Find a group with the given name, then perform *NodeGroup* operation on it.
-* `Build`: Return the built network and a map from name to node, all nodes described previously will actually be connected here, any connection outside the builder will be overwritten.
+ByteNS also provides a *builder* to facilitate the process. Instead of connecting *edge*s，it builds the network by connecting all *path*s in one line of code.    
+*Path*, aka *chain*, is similar to the *path* concept in graph theory, representing a route along the *edge*s of a graph.      
 
-##### Simulating
+* `Chain()`: saves current chain (*path*) and in order to describe another chain.
+* `Node()`: appends a given node to current chain.
+* `NodeWithName()`: same as *Node*, with a customizable name to refer to later.
+* `NodeByName()`: finds (refer to) a node with the given name, and appends it to current chain.
+* `NodeGroup()`: given some nodes, perform *Node* operation on each of them in order.
+* `NodeGroupWithName()`: same as *NodeGroup*, with a customizable name.
+* `NodeGroupByName()`: finds a group with the given name, then perform *NodeGroup* operation on it.
+* `Build()`: actually connect the previously described *chain*s to finally build the network.
 
-Once the network is built, packets can be sent into any entry nodes and received from any exit nodes.
+##### Starting Network Simulation
+
+Once the network is built, start running it so packets can be sent into any entry nodes and received from any *endpoint* (exit) nodes.
 
 ##### Collecting Data
 
-Data could be collected by callback function `node.OnEmitCallback()`. Any further analyses to the collected data could be done after the simulation. Also note that time-costing callbacks would slow down the simulation so keep an eye on its performance.
+Data could be collected by callback function `node.OnEmitCallback()`. 
+Also note that time-costing callbacks would slow down the simulation, so it is highly recommended only collecting data in the callbacks, 
+and leave further analyses after the simulation ended.
 
 #### Example
 
 Following is an example of a network with two entries, one endpoint and two chains.
 
-* Chain 1: entry1 - channel1(with `30%` packet loss) - restrict(1 pps, 1024 bps, buffer limited in 4096 bytes and 5 packets) - endpoint
-* Chain 2: entry2 - channel2(with `10%` packet loss) - endpoint
+* Chain 1: entry1 -> channel1(with `30%` packet loss rate) -> restrict (1 pps, 1024 bps, buffer limited in 4096 bytes and 5 packets) -> endpoint
+* Chain 2: entry2 -> channel2(with `10%` packet loss rate) -> endpoint
 
 ```go
 package main
@@ -122,11 +127,15 @@ import (
 func main() {
 	source := rand.NewSource(0)
 	random := rand.New(source)
-	helper := byte_ns.NewBuilder()
+	
+	// design a callback function to collect data
 	callback := func(packet *base.SimulatedPacket) {
 		println("emit packet")
 		println(packet.String())
 	}
+	
+	// build the network with the builder
+	helper := byte_ns.NewBuilder()
 	n1 := node.NewChannelNode("entry1", 0, callback, math.NewRandomLoss(0.1, random))
 	network, nodes := helper.
 		Chain().
@@ -137,11 +146,17 @@ func main() {
 		Node(node.NewChannelNode("entry2", 0, callback, math.NewRandomLoss(0.1, random))).
 		NodeByName("endpoint").
 		Build(1, 10000, 10)
+	
+	// start network simulation
 	network.Start()
 	defer network.Stop()
+	
+	// locate entry and exit(?) nodes
 	entry1 := nodes["entry1"]
 	entry2 := nodes["entry2"]
 	endpoint := nodes["endpoint"].(*node.EndpointNode)
+	
+	// send and receive through the network simulator
 	for i := 0; i < 20; i++ {
 		entry1.Send(&base.Packet{Data: []byte{0x01, 0x02}})
 	}
