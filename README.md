@@ -38,7 +38,7 @@ Nodes are highly customizable, and some typical nodes are pre-defined:
 
     ```mermaid
     graph LR
-      In ==> Broadcast --> Out1
+      In --> Broadcast --> Out1
       Broadcast --> Out2
       Broadcast --> Out3
     ```
