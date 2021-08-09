@@ -21,7 +21,7 @@ func NewScatterNode(name string, selector RouteSelector) *ScatterNode {
 	}
 }
 
-func (s *ScatterNode) Send(packet *base.Packet) {
+func (s *ScatterNode) Send(packet []byte) {
 	t := time.Now()
 	p := &base.SimulatedPacket{
 		Actual:   packet,

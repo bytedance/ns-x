@@ -18,7 +18,7 @@ func NewBroadcastNode(name string, callback base.OnEmitCallback) *BroadcastNode 
 	}
 }
 
-func (b *BroadcastNode) Send(packet *base.Packet) {
+func (b *BroadcastNode) Send(packet []byte) {
 	for _, n := range b.next {
 		n.Send(packet)
 	}

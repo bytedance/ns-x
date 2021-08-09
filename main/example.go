@@ -32,10 +32,10 @@ func main() {
 	entry2 := nodes["entry2"]
 	endpoint := nodes["endpoint"].(*node.EndpointNode)
 	for i := 0; i < 20; i++ {
-		entry1.Send(&base.Packet{Data: []byte{0x01, 0x02}})
+		entry1.Send([]byte{0x01, 0x02})
 	}
 	for i := 0; i < 20; i++ {
-		entry2.Send(&base.Packet{Data: []byte{0x01, 0x02}})
+		entry2.Send([]byte{0x01, 0x02})
 	}
 	count := 0
 	for {

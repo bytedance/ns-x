@@ -7,11 +7,11 @@ import (
 )
 
 // PacketHandler handles how much a Packet delayed and whether lost according to historical records
-type PacketHandler func(packet *base.Packet, record *base.PacketQueue) (delay time.Duration, lost bool)
+type PacketHandler func(packet []byte, record *base.PacketQueue) (delay time.Duration, lost bool)
 
 // Combine given handlers to sum up all their delays and losses
 func Combine(handlers ...PacketHandler) PacketHandler {
-	return func(packet *base.Packet, record *base.PacketQueue) (time.Duration, bool) {
+	return func(packet []byte, record *base.PacketQueue) (time.Duration, bool) {
 		delay := time.Duration(0)
 		loss := false
 		for _, handler := range handlers {
@@ -37,7 +37,7 @@ func NewChannelNode(name string, recordSize int, onEmitCallback base.OnEmitCallb
 	}
 }
 
-func (c *ChannelNode) Send(packet *base.Packet) {
+func (c *ChannelNode) Send(packet []byte) {
 	now := time2.Now()
 	t := now
 	l := false

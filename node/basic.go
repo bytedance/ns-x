@@ -56,7 +56,7 @@ func (n *BasicNode) Emit(packet *base.SimulatedPacket) {
 	}
 }
 
-func (n *BasicNode) Send(packet *base.Packet) {
+func (n *BasicNode) Send(packet []byte) {
 	panic("not implemented")
 }
 
