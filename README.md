@@ -1,6 +1,6 @@
-# ByteNS
+# ns-x
 
-An easy-to-use, flexible library to simulate network behavior, written mainly in Go.
+An easy-to-use, flexible **network simulator** library, written mainly in Go.
 
 ## Feature
 
