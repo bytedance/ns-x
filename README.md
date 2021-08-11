@@ -24,9 +24,6 @@ An easy-to-use, flexible **network simulator** library, written mainly in Go.
 #### Prerequisites
 
 - `go mod` must be supported and enabled.
-- A platform-specific `time/binary/*/libtime.a` library is required by cgo for high resolution timer. Its Windows,
-  Linux, and Darwin binaries are pre-built. Compile the library manually if running on another arch/os. (
-  See <a href = "#compile">compile</a> section)
 
 #### Usage
 
@@ -187,27 +184,6 @@ func main() {
 }
 ```
 
-#### Compile from source code<span id="compile"/>
-
-The following library is built successfully on Go v1.16.5, cmake v3.21.0, clang v12.0.5, with C++ 11.
-
-```bash
-cd time/cpp
-cmake CMakeLists.txt
-make
-```
-
-which generates file `libtime.a` under `time/cpp` directory.
-
-To make the compiled library work, a tag *time_compiled* need to be added to go build.
-
-```bash
-go build -tags time_compiled
-```
-
-There is also a configuration file `cross-compile.cmake` for cross compiling the high resolution time library with
-little modification.
-
 ## Design
 
 #### Architecture
@@ -231,20 +207,6 @@ The loop is separated into two parts: fetch and drain.
 Parallelized main loop is already implemented, main loop will split once the packet heap reach a given threshold, and
 exit after spinning a fixed rounds without any task. The active main loop will always exist but no more than a given
 limit.
-
-#### High Resolution Time
-
-Time is of vital significance in simulations, it directly decides the accuracy of simulation.
-
-Since the simulation needs to access current time with high resolution and low cost, the standard time library of go is
-not enough. (internal system call, accurate but with high cost, update not timely)
-
-Currently, high resolution time is a wrapper of C++ time library. The core design is use system time and steady time
-together. The system time means time retrieved through system call, while the steady time is usually a counter of CPU
-cycles. The system time is accurate but with lower resolution and higher cost, the steady time is not so accurate (due
-to turbo of CPU) but with the highest resolution in theory. Once trying to fetch the time, it's checked whether enough
-time has passed by since the last alignment. If so, an alignment will be performed immediately. The align operation
-itself is thread safe by a lock, but another double check will guarantee low cost.
 
 ## Contribution
 

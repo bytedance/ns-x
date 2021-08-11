@@ -2,7 +2,7 @@ package node
 
 import (
 	"ns-x/base"
-	"ns-x/time"
+	"time"
 )
 
 // GatherNode ...

@@ -2,7 +2,7 @@ package node
 
 import (
 	"ns-x/base"
-	"ns-x/time"
+	"time"
 )
 
 // BroadcastNode is a node broadcast any packet pass by to all its next node

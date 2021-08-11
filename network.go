@@ -4,8 +4,8 @@ import (
 	"container/heap"
 	"go.uber.org/atomic"
 	"ns-x/base"
-	"ns-x/time"
 	"runtime"
+	"time"
 )
 
 // Network Indicates a simulated network, which contains some simulated nodes

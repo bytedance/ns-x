@@ -2,7 +2,6 @@ package node
 
 import (
 	"ns-x/base"
-	time2 "ns-x/time"
 	"time"
 )
 
@@ -38,7 +37,7 @@ func NewChannelNode(name string, recordSize int, onEmitCallback base.OnEmitCallb
 }
 
 func (c *ChannelNode) Send(packet []byte) {
-	now := time2.Now()
+	now := time.Now()
 	t := now
 	l := false
 	if c.handler != nil {
