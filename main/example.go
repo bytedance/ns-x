@@ -11,7 +11,7 @@ import (
 func main() {
 	source := rand.NewSource(0)
 	random := rand.New(source)
-	helper := byte_ns.NewBuilder()
+	helper := ns_x.NewBuilder()
 	callback := func(packet *base.SimulatedPacket) {
 		println("emit packet")
 		println(packet.String())

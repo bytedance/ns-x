@@ -1,4 +1,4 @@
-package byte_ns
+package ns_x
 
 import (
 	"byte-ns/base"
