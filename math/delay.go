@@ -8,37 +8,34 @@ import (
 )
 
 type Delay interface {
-	Delay() time.Duration   // 返回具体延迟（包含jitter）
-	Average() time.Duration // 返回参数 average
-	Jitter() time.Duration  // 返回 jitter 结果
+	Delay() time.Duration   // Actual Delay duration (include jitter)
+	Average() time.Duration // Average delay duration
+	Jitter() time.Duration  // Jitter delay duration
 }
 
-// basicDelay 是 Delay 共同约定使用的变量
+// basicDelay skeleton implementation of Delay
 type basicDelay struct {
-	average time.Duration // 平均延迟 单位 ms
-	jitter  time.Duration // 单位 ms
-	random  *rand.Rand    // 节点统一的随机数生成器
+	average time.Duration
+	jitter  time.Duration
+	random  *rand.Rand
 }
 
-// Average 返回参数 average
 func (bd *basicDelay) Average() time.Duration {
 	return bd.average
 }
 
-// Jitter 返回参数 jitter
 func (bd *basicDelay) Jitter() time.Duration {
 	jitter := float64(bd.jitter.Microseconds())
 	return time.Duration((2*bd.random.Float64()-1)*jitter) * time.Microsecond
 }
 
-// FixedDelay 无分布，每次均为 average
+// FixedDelay delay fixed duration
 type FixedDelay struct {
 	*basicDelay
 }
 
 var _ Delay = &FixedDelay{}
 
-// NewFixedDelay 创建一个无分布延迟模型处理函数，average，jitter 单位是 ms
 func NewFixedDelay(average time.Duration, jitter time.Duration, random *rand.Rand) node.PacketHandler {
 	delay := &FixedDelay{
 		&basicDelay{
@@ -58,7 +55,7 @@ func (nd *FixedDelay) PacketHandler([]byte, *base.PacketQueue) (time.Duration, b
 	return nd.Delay(), false
 }
 
-// NormalDelay 正态分布，大体在 [average-3*sigma,average+3*sigma] 范围
+// NormalDelay delay duration of normal distribution
 type NormalDelay struct {
 	*basicDelay
 	sigma time.Duration
@@ -87,7 +84,7 @@ func (nd *NormalDelay) PacketHandler([]byte, *base.PacketQueue) (time.Duration, 
 	return nd.Delay(), false
 }
 
-// UniformDelay 均匀分布，[0,2*average) 范围内
+// UniformDelay delay duration of uniform distribution
 type UniformDelay struct {
 	*basicDelay
 }

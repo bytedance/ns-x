@@ -7,13 +7,11 @@ import (
 	"time"
 )
 
-// Loss 接口，
-// 目前有不丢包，单一概率丢包模型和 Gilbert 模型丢包 三种具体实现
 type Loss interface {
-	Loss() bool // 若返回 true 则丢包
+	Loss() bool // the packet Loss if true
 }
 
-// NoneLoss 不丢包
+// NoneLoss no loss
 type NoneLoss struct {
 }
 
@@ -32,7 +30,7 @@ func (nl *NoneLoss) PacketHandler([]byte, *base.PacketQueue) (time.Duration, boo
 	return 0, nl.Loss()
 }
 
-// RandomLoss 单一概率丢包模型
+// RandomLoss loss with the given possibility
 type RandomLoss struct {
 	possibility float64
 	random      *rand.Rand
@@ -56,8 +54,7 @@ func (rl *RandomLoss) PacketHandler([]byte, *base.PacketQueue) (time.Duration, b
 	return 0, rl.Loss()
 }
 
-// GilbertLoss Gilbert丢包模型
-// 有两个状态，分别有一个丢包概率和一个状态变迁概率
+// GilbertLoss Gilbert Loss Model
 type GilbertLoss struct {
 	s1Loss, s1Transit, s2Loss, s2Transit float64
 	gilbertState                         int
