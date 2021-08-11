@@ -1,11 +1,11 @@
 package main
 
 import (
-	"byte-ns"
-	"byte-ns/base"
-	"byte-ns/math"
-	"byte-ns/node"
 	"math/rand"
+	"ns-x"
+	"ns-x/base"
+	"ns-x/math"
+	"ns-x/node"
 )
 
 func main() {

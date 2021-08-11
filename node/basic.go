@@ -1,7 +1,7 @@
 package node
 
 import (
-	"byte-ns/base"
+	"ns-x/base"
 )
 
 // BasicNode is skeleton implementation of Node

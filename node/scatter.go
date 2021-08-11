@@ -1,8 +1,8 @@
 package node
 
 import (
-	"byte-ns/base"
-	"byte-ns/time"
+	"ns-x/base"
+	"ns-x/time"
 )
 
 // RouteSelector is rule of how to select the path of packet

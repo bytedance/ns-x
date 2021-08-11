@@ -128,10 +128,10 @@ Following is an example of a network with two entries, one endpoint and two chai
 package main
 
 import (
-	"byte-ns"
-	"byte-ns/base"
-	"byte-ns/math"
-	"byte-ns/node"
+	"ns-x"
+	"ns-x/base"
+	"ns-x/math"
+	"ns-x/node"
 	"math/rand"
 )
 
@@ -146,7 +146,7 @@ func main() {
 	}
 
 	// build the network with the builder
-	helper := byte_ns.NewBuilder()
+	helper := ns_x.NewBuilder()
 	n1 := node.NewChannelNode("entry1", 0, callback, math.NewRandomLoss(0.1, random))
 	network, nodes := helper.
 		Chain().

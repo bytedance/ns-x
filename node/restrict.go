@@ -1,10 +1,10 @@
 package node
 
 import (
-	"byte-ns/base"
-	time2 "byte-ns/time"
 	"go.uber.org/atomic"
 	"math"
+	"ns-x/base"
+	time2 "ns-x/time"
 	"time"
 )
 

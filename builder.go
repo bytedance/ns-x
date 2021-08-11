@@ -1,7 +1,7 @@
 package ns_x
 
 import (
-	"byte-ns/base"
+	"ns-x/base"
 	"reflect"
 	"strconv"
 	"strings"

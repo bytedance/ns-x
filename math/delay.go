@@ -1,9 +1,9 @@
 package math
 
 import (
-	"byte-ns/base"
-	node2 "byte-ns/node"
 	"math/rand"
+	"ns-x/base"
+	"ns-x/node"
 	"time"
 )
 
@@ -39,7 +39,7 @@ type FixedDelay struct {
 var _ Delay = &FixedDelay{}
 
 // NewFixedDelay 创建一个无分布延迟模型处理函数，average，jitter 单位是 ms
-func NewFixedDelay(average time.Duration, jitter time.Duration, random *rand.Rand) node2.PacketHandler {
+func NewFixedDelay(average time.Duration, jitter time.Duration, random *rand.Rand) node.PacketHandler {
 	delay := &FixedDelay{
 		&basicDelay{
 			average: average,
@@ -66,7 +66,7 @@ type NormalDelay struct {
 
 var _ Delay = &NormalDelay{}
 
-func NewNormalDelay(average, jitter, sigma time.Duration, random *rand.Rand) node2.PacketHandler {
+func NewNormalDelay(average, jitter, sigma time.Duration, random *rand.Rand) node.PacketHandler {
 	delay := &NormalDelay{
 		&basicDelay{
 			average: average,
@@ -94,7 +94,7 @@ type UniformDelay struct {
 
 var _ Delay = &UniformDelay{}
 
-func NewUniformDelay(average, jitter time.Duration, random *rand.Rand) node2.PacketHandler {
+func NewUniformDelay(average, jitter time.Duration, random *rand.Rand) node.PacketHandler {
 	delay := &UniformDelay{
 		&basicDelay{
 			average: average,

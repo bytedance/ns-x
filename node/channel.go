@@ -1,8 +1,8 @@
 package node
 
 import (
-	"byte-ns/base"
-	time2 "byte-ns/time"
+	"ns-x/base"
+	time2 "ns-x/time"
 	"time"
 )
 

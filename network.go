@@ -1,10 +1,10 @@
 package ns_x
 
 import (
-	"byte-ns/base"
-	"byte-ns/time"
 	"container/heap"
 	"go.uber.org/atomic"
+	"ns-x/base"
+	"ns-x/time"
 	"runtime"
 )
 

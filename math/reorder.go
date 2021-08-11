@@ -1,9 +1,9 @@
 package math
 
 import (
-	"byte-ns/base"
-	node2 "byte-ns/node"
 	"math/rand"
+	"ns-x/base"
+	node2 "ns-x/node"
 	"time"
 )
 
