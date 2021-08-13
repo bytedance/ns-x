@@ -5,48 +5,33 @@ import (
 	"time"
 )
 
-const preserveBufferSize = 10
-
-// EndpointNode is a node to receive Packets, Packets reached an endpoint will no longer be transmitted
+// EndpointNode is a node to receive Events, Events reached an endpoint will no longer be transmitted
 type EndpointNode struct {
-	BasicNode
-	concurrentBuffer *base.PacketBuffer
-	localBuffer      []*base.SimulatedPacket
+	*BasicNode
+	callback func(packet base.Packet, now time.Time)
 }
 
-func NewEndpointNode(name string) *EndpointNode {
+func NewEndpointNode(name string, callback base.OnEmitCallback) *EndpointNode {
 	return &EndpointNode{
-		BasicNode:        BasicNode{name: name},
-		concurrentBuffer: base.NewPacketBuffer(),
-		localBuffer:      make([]*base.SimulatedPacket, 0, preserveBufferSize),
+		BasicNode: NewBasicNode(name, callback),
 	}
 }
 
-func (e *EndpointNode) Send(packet []byte) {
-	t := time.Now()
-	p := &base.SimulatedPacket{
-		Actual:   packet,
-		SentTime: t,
-		EmitTime: t,
-		Loss:     false,
-		Where:    e,
+func (n *EndpointNode) Emit(packet base.Packet, now time.Time) {
+	if n.callback != nil {
+		n.callback(packet, now)
 	}
-	e.concurrentBuffer.Insert(p)
-	e.OnSend(p)
 }
 
-// Receive a packet if possible, nil otherwise
-func (e *EndpointNode) Receive() *base.SimulatedPacket {
-	if len(e.localBuffer) == 0 {
-		e.concurrentBuffer.Reduce(func(packet *base.SimulatedPacket) {
-			e.localBuffer = append(e.localBuffer, packet)
-		})
+func (n *EndpointNode) Send(packet base.Packet) {
+	now := time.Now()
+	for _, node := range n.next {
+		n.Events().Insert(base.NewFixedEvent(func() {
+			n.ActualEmit(packet, node, now)
+		}, now))
 	}
-	index := len(e.localBuffer) - 1
-	if index < 0 {
-		return nil
-	}
-	p := e.localBuffer[index]
-	e.localBuffer = e.localBuffer[:index]
-	return p
+}
+
+func (n *EndpointNode) Receive(callback func(packet base.Packet, now time.Time)) {
+	n.callback = callback
 }

@@ -8,56 +8,62 @@ import (
 )
 
 // RestrictNode simulate a node with limited ability
-// Once Packets through a RestrictNode reaches the limit(in bps or pps), the later Packets will be put in a buffer
-// Once the buffer overflow, later Packets will be discarded
-// The buffer limit will not be accurate, usually a little lower than specified, since it takes time(usually less than microseconds) to send Packets
+// Once Events through a RestrictNode reaches the limit(in bps or pps), the later Events will be put in a events
+// Once the events overflow, later Events will be discarded
+// The events limit will not be accurate, usually a little lower than specified, since it takes time(usually less than microseconds) to send Events
 type RestrictNode struct {
-	BasicNode
+	*BasicNode
 	ppsLimit, bpsLimit                float64
 	bufferSizeLimit, bufferCountLimit int64
 	bufferSize, bufferCount           *atomic.Int64
-	emitTime                          time.Time
+	busyTime                          *atomic.Int64 // unix nano sec
 }
 
 // NewRestrictNode create a new restrict with the given parameter
 // next, recordSize, onEmitCallback the same as BasicNode
-// ppsLimit, bpsLimit: the limit of Packets per second/bytes per second
-// bufferSizeLimit, bufferCountLimit: the limit of waiting Packets, in bytes/Packets
-func NewRestrictNode(name string, recordSize int, onEmitCallback base.OnEmitCallback,
-	ppsLimit, bpsLimit float64,
-	bufferSizeLimit, bufferCountLimit int64) *RestrictNode {
+// ppsLimit, bpsLimit: the limit of Events per second/bytes per second
+// bufferSizeLimit, bufferCountLimit: the limit of waiting Events, in bytes/Events
+func NewRestrictNode(name string, onEmitCallback base.OnEmitCallback, ppsLimit, bpsLimit float64, bufferSizeLimit, bufferCountLimit int64) *RestrictNode {
 	return &RestrictNode{
-		BasicNode:        *NewBasicNode(name, recordSize, onEmitCallback),
+		BasicNode:        NewBasicNode(name, onEmitCallback),
 		ppsLimit:         ppsLimit,
 		bpsLimit:         bpsLimit,
 		bufferSizeLimit:  bufferSizeLimit,
 		bufferCountLimit: bufferCountLimit,
 		bufferSize:       atomic.NewInt64(0),
 		bufferCount:      atomic.NewInt64(0),
-		emitTime:         time.Now(),
+		busyTime:         atomic.NewInt64(0),
 	}
 }
 
-func (r *RestrictNode) Emit(packet *base.SimulatedPacket) {
-	r.BasicNode.Emit(packet)
-	r.bufferSize.Sub(int64(len(packet.Actual)))
-	r.bufferCount.Dec()
-}
-
-func (r *RestrictNode) Send(packet []byte) {
-	if r.bufferSize.Load() >= r.bufferSizeLimit || r.bufferCount.Load() >= r.bufferCountLimit {
+func (n *RestrictNode) Emit(packet base.Packet, now time.Time) {
+	// TODO: an accurate way to determine buffer overflow
+	if n.bufferSize.Load() >= n.bufferSizeLimit || n.bufferCount.Load() >= n.bufferCountLimit {
 		return
 	}
-	sentTime := time.Now()
-	if r.emitTime.Before(sentTime) {
-		r.emitTime = sentTime
+	flag := true
+	for flag {
+		nanoseconds := n.busyTime.Load()
+		t := time.Unix(0, nanoseconds)
+		flag = false
+		if t.Before(now) {
+			flag = !n.busyTime.CAS(nanoseconds, now.UnixNano())
+		}
 	}
-	emitTime := r.emitTime
-	p := &base.SimulatedPacket{Actual: packet, EmitTime: emitTime, SentTime: sentTime, Loss: false, Where: r}
-	step := math.Max(1.0/r.ppsLimit, float64(len(packet))/r.bpsLimit)
-	r.emitTime = emitTime.Add(time.Duration(step*1000*1000) * time.Microsecond)
-	r.bufferSize.Add(int64(len(packet)))
-	r.bufferCount.Inc()
-	r.Packets().Insert(p)
-	r.BasicNode.OnSend(p)
+	step := math.Max(1.0/n.ppsLimit, float64(packet.Size())/n.bpsLimit)
+	delta := (time.Duration(step*1000*1000) * time.Microsecond).Nanoseconds()
+	t := time.Unix(0, n.busyTime.Add(delta)-delta)
+	n.bufferSize.Add(int64(packet.Size()))
+	n.bufferCount.Inc()
+	n.Events().Insert(base.NewFixedEvent(func() {
+		n.ActualEmit(packet, n.next[0], t)
+		n.bufferSize.Sub(int64(packet.Size()))
+		n.bufferCount.Dec()
+	}, t))
+}
+
+func (n *RestrictNode) Check() {
+	if n.next == nil || len(n.next) != 1 {
+		panic("restrict node can only has single connection")
+	}
 }

@@ -1,50 +1,52 @@
 package main
 
 import (
+	"go.uber.org/atomic"
 	"math/rand"
 	"ns-x"
 	"ns-x/base"
 	"ns-x/math"
 	"ns-x/node"
+	"time"
 )
 
 func main() {
 	source := rand.NewSource(0)
 	random := rand.New(source)
 	helper := ns_x.NewBuilder()
-	callback := func(packet *base.SimulatedPacket) {
+	callback := func(packet base.Packet, target base.Node, now time.Time) {
 		println("emit packet")
-		println(packet.String())
 	}
-	n1 := node.NewChannelNode("entry1", 0, callback, math.NewRandomLoss(0.1, random))
+	n1 := node.NewEndpointNode("entry1", nil)
 	network, nodes := helper.
 		Chain().
 		Node(n1).
-		Node(node.NewRestrictNode("", 0, nil, 1.0, 1024.0, 8192, 20)).
-		Node(node.NewEndpointNode("endpoint")).
+		Node(node.NewChannelNode("", callback, math.NewRandomLoss(0.1, random))).
+		Node(node.NewRestrictNode("", nil, 1.0, 1024.0, 8192, 20)).
+		Node(node.NewEndpointNode("endpoint", nil)).
 		Chain().
-		Node(node.NewChannelNode("entry2", 0, callback, math.NewRandomLoss(0.1, random))).
+		Node(node.NewEndpointNode("entry2", nil)).
+		Node(node.NewChannelNode("", callback, math.NewRandomLoss(0.1, random))).
 		NodeByName("endpoint").
 		Build(1, 10000, 10)
+	entry1 := nodes["entry1"].(*node.EndpointNode)
+	entry2 := nodes["entry2"].(*node.EndpointNode)
+	endpoint := nodes["endpoint"].(*node.EndpointNode)
+	count := atomic.NewInt64(0)
+	endpoint.Receive(func(packet base.Packet, now time.Time) {
+		if packet != nil {
+			count.Inc()
+			println("receive packet at", now.String())
+			println("total", count.Load(), "packets received")
+		}
+	})
 	network.Start()
 	defer network.Stop()
-	entry1 := nodes["entry1"]
-	entry2 := nodes["entry2"]
-	endpoint := nodes["endpoint"].(*node.EndpointNode)
 	for i := 0; i < 20; i++ {
-		entry1.Send([]byte{0x01, 0x02})
+		entry1.Send(base.RawPacket([]byte{0x01, 0x02}))
 	}
 	for i := 0; i < 20; i++ {
-		entry2.Send([]byte{0x01, 0x02})
+		entry2.Send(base.RawPacket([]byte{0x01, 0x02}))
 	}
-	count := 0
-	for {
-		packet := endpoint.Receive()
-		if packet != nil {
-			count++
-			println("receive packet")
-			println(packet.String())
-			println("total", count, "packets received")
-		}
-	}
+	time.Sleep(30 * time.Second)
 }
