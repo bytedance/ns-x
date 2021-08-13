@@ -6,15 +6,15 @@ import (
 )
 
 // PacketHandler handles how much a Packet delayed and whether lost according to historical records
-type PacketHandler func(packet []byte, record *base.PacketQueue) (delay time.Duration, lost bool)
+type PacketHandler func(packet base.Packet) (delay time.Duration, lost bool)
 
 // Combine given handlers to sum up all their delays and losses
 func Combine(handlers ...PacketHandler) PacketHandler {
-	return func(packet []byte, record *base.PacketQueue) (time.Duration, bool) {
+	return func(packet base.Packet) (time.Duration, bool) {
 		delay := time.Duration(0)
 		loss := false
 		for _, handler := range handlers {
-			d, l := handler(packet, record)
+			d, l := handler(packet)
 			delay += d
 			loss = l || loss
 		}
@@ -24,28 +24,36 @@ func Combine(handlers ...PacketHandler) PacketHandler {
 
 // ChannelNode is a simulated network channel with loss, delay and reorder features
 type ChannelNode struct {
-	BasicNode
+	*BasicNode
 	handler PacketHandler
 }
 
 // NewChannelNode creates a new channel
-func NewChannelNode(name string, recordSize int, onEmitCallback base.OnEmitCallback, handler PacketHandler) *ChannelNode {
+func NewChannelNode(name string, onEmitCallback base.OnEmitCallback, handler PacketHandler) *ChannelNode {
 	return &ChannelNode{
-		BasicNode: *NewBasicNode(name, recordSize, onEmitCallback),
+		BasicNode: NewBasicNode(name, onEmitCallback),
 		handler:   handler,
 	}
 }
 
-func (c *ChannelNode) Send(packet []byte) {
-	now := time.Now()
-	t := now
-	l := false
-	if c.handler != nil {
-		delay, loss := c.handler(packet, c.record)
-		t = t.Add(delay)
-		l = l || loss
+func (n *ChannelNode) Emit(packet base.Packet, now time.Time) {
+	delay := time.Duration(0)
+	loss := false
+	if n.handler != nil {
+		d, l := n.handler(packet)
+		delay += d
+		loss = loss || l
 	}
-	p := &base.SimulatedPacket{Actual: packet, EmitTime: t, SentTime: now, Loss: l, Where: c}
-	c.Packets().Insert(p)
-	c.OnSend(p)
+	if !loss {
+		n.Events().Insert(base.NewDelayedEvent(func(t time.Time) {
+			n.ActualEmit(packet, n.next[0], t)
+		}, delay, now))
+	}
+}
+
+func (n *ChannelNode) Check() {
+	if n.next == nil || len(n.next) != 1 {
+		panic("channel node can only has single connection")
+	}
+	n.BasicNode.Check()
 }

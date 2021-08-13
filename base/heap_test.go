@@ -10,7 +10,7 @@ import (
 )
 
 func TestHeap(t *testing.T) {
-	packetHeap := &PacketHeap{}
+	packetHeap := &EventHeap{}
 	count := 50
 	for i := 0; i < count; i++ {
 		heap.Push(packetHeap, &SimulatedPacket{EmitTime: time.Unix(rand.Int63(), 0)})
@@ -26,7 +26,7 @@ func TestHeap(t *testing.T) {
 }
 
 func BenchmarkHeap(b *testing.B) {
-	packetHeap := &PacketHeap{}
+	packetHeap := &EventHeap{}
 	for i := 0; i < b.N; i++ {
 		heap.Push(packetHeap, &SimulatedPacket{EmitTime: time.Unix(rand.Int63(), 0)})
 	}

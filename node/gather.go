@@ -7,22 +7,18 @@ import (
 
 // GatherNode ...
 type GatherNode struct {
-	BasicNode
+	*BasicNode
 }
 
 func NewGatherNode(name string) *GatherNode {
-	return &GatherNode{BasicNode{name: name}}
+	return &GatherNode{&BasicNode{name: name}}
 }
 
-func (g *GatherNode) Send(packet []byte) {
-	t := time.Now()
-	p := &base.SimulatedPacket{
-		Actual:   packet,
-		SentTime: t,
-		EmitTime: t,
-		Where:    g,
-		Loss:     false,
+func (n *GatherNode) Emit(packet base.Packet, now time.Time) {
+	if n.next == nil || len(n.next) != 1 {
+		panic("gather node can only has single connection")
 	}
-	g.OnSend(p)
-	g.Emit(p)
+	n.Events().Insert(base.NewFixedEvent(func() {
+		n.ActualEmit(packet, n.next[0], now)
+	}, now))
 }

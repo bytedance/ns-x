@@ -5,37 +5,39 @@ import (
 	"unsafe"
 )
 
-// PacketBuffer is a thread-safe, lock-free buffer used to store simulated packets, implemented like a single link list
-type PacketBuffer struct {
+// EventBuffer is a thread-safe, lock-free buffer used to store simulated packets, implemented like a single link list
+type EventBuffer struct {
 	node *atomic.UnsafePointer
 }
 
-// NewPacketBuffer creates a new packet buffer
-func NewPacketBuffer() *PacketBuffer {
-	return &PacketBuffer{
+// NewEventBuffer creates a new packet buffer
+func NewEventBuffer() *EventBuffer {
+	return &EventBuffer{
 		node: atomic.NewUnsafePointer(nil),
 	}
 }
 
 type node struct {
-	next *node
-	data *SimulatedPacket
+	next  *node
+	event Event
 }
 
 // Insert a simulated packet to the buffer, thread-safe
-func (b *PacketBuffer) Insert(packet *SimulatedPacket) {
-	n := &node{next: (*node)(b.node.Load()), data: packet}
-	for !b.node.CAS(unsafe.Pointer(n.next), unsafe.Pointer(n)) {
-		n.next = (*node)(b.node.Load())
+func (b *EventBuffer) Insert(events ...Event) {
+	for _, event := range events {
+		n := &node{next: (*node)(b.node.Load()), event: event}
+		for !b.node.CAS(unsafe.Pointer(n.next), unsafe.Pointer(n)) {
+			n.next = (*node)(b.node.Load())
+		}
 	}
 }
 
-// Reduce means clear the buffer and do an action on the data cleared, thread-safe
-func (b *PacketBuffer) Reduce(action func(packet *SimulatedPacket)) {
+// Reduce means clear the buffer and do an action on the event cleared, thread-safe
+func (b *EventBuffer) Reduce(action func(event Event)) {
 	n := b.node.Swap(nil)
 	node := (*node)(n)
 	for node != nil {
-		action(node.data)
+		action(node.event)
 		node = node.next
 	}
 }

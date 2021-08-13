@@ -6,6 +6,16 @@ import (
 	"time"
 )
 
+type Packet interface {
+	Size() int
+}
+
+type RawPacket []byte
+
+func (p RawPacket) Size() int {
+	return len(p)
+}
+
 // SimulatedPacket indicates a simulated packet, with its Actual packet and some simulated environment
 type SimulatedPacket struct {
 	Actual   []byte    // the Actual packet

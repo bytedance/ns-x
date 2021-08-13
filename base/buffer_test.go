@@ -1,16 +1,18 @@
 package base
 
 import (
-	"math/rand"
 	"testing"
 	"time"
 )
 
 func BenchmarkBuffer(b *testing.B) {
-	buffer := NewPacketBuffer()
-	for i := 0; i < b.N; i++ {
-		buffer.Insert(&SimulatedPacket{EmitTime: time.Unix(rand.Int63(), 0)})
+	buffer := NewEventBuffer()
+	t := time.Now()
+	callback := func(event Event) {
 	}
-	buffer.Reduce(func(packet *SimulatedPacket) {
-	})
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		buffer.Insert(NewFixedEvent(nil, t))
+	}
+	buffer.Reduce(callback)
 }

@@ -33,15 +33,15 @@ func NewNetwork(nodes []base.Node, loopLimit, emptySpinLimit, splitThreshold int
 	}
 }
 
-// fetch Fetch Packets from nodes in the network, and put them into given heap
+// fetch Fetch Events from nodes in the network, and put them into given heap
 func (n *Network) fetch(packetHeap heap.Interface) bool {
 	flag := false
 	for _, node := range n.nodes {
-		buffer := node.Packets()
+		buffer := node.Events()
 		if buffer == nil {
 			continue
 		}
-		buffer.Reduce(func(packet *base.SimulatedPacket) {
+		buffer.Reduce(func(packet base.Event) {
 			heap.Push(packetHeap, packet)
 			flag = true
 		})
@@ -49,44 +49,44 @@ func (n *Network) fetch(packetHeap heap.Interface) bool {
 	return flag
 }
 
-// drain Drain the given heap if possible, and OnEmit the Packets available
-func (n *Network) drain(packetHeap *base.PacketHeap) bool {
+// drain Drain the given heap if possible, and OnEmit the Events available
+func (n *Network) drain(packetHeap *base.EventHeap) bool {
 	flag := false
 	t := time.Now()
 	for !packetHeap.IsEmpty() {
 		p := packetHeap.Peek()
-		if p.EmitTime.After(t) {
+		if p.Time().After(t) {
 			break
 		}
-		p.Where.Emit(p)
+		p.Action()()
 		heap.Pop(packetHeap)
 		flag = true
 	}
 	return flag
 }
 
-func (n *Network) clear(packetHeap *base.PacketHeap) {
+func (n *Network) clear(packetHeap *base.EventHeap) {
 	for !packetHeap.IsEmpty() {
 		n.drain(packetHeap)
 	}
 }
 
-func (n *Network) split(packetHeap *base.PacketHeap) {
+func (n *Network) split(packetHeap *base.EventHeap) {
 	count := n.runningCount.Inc()
 	if int(count) <= n.loopLimit {
 		length := packetHeap.Len()
-		h := &base.PacketHeap{Storage: packetHeap.Storage[length/2:]}
+		h := &base.EventHeap{Storage: packetHeap.Storage[length/2:]}
 		packetHeap.Storage = packetHeap.Storage[:length/2]
 		heap.Init(packetHeap)
 		heap.Init(h)
-		go n.mainLoop(h, count)
+		go n.eventLoop(h, count)
 	} else {
 		n.runningCount.Dec()
 	}
 }
 
-// mainLoop Main polling loop of network
-func (n *Network) mainLoop(packetHeap *base.PacketHeap, index int32) {
+// eventLoop Main polling loop of network
+func (n *Network) eventLoop(packetHeap *base.EventHeap, index int32) {
 	println("network main loop start #", index)
 	runtime.LockOSThread()
 	defer runtime.UnlockOSThread()
@@ -124,7 +124,10 @@ func (n *Network) Start() {
 	}
 	n.running.Store(true)
 	n.runningCount.Inc()
-	go n.mainLoop(&base.PacketHeap{}, 1)
+	for _, node := range n.nodes {
+		node.Check()
+	}
+	go n.eventLoop(&base.EventHeap{}, 1)
 }
 
 // Stop the network, release resources

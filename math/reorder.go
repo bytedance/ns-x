@@ -27,7 +27,7 @@ func (nr *NoneReorder) Reorder() time.Duration {
 	return 0
 }
 
-func (nr *NoneReorder) PacketHandler([]byte, *base.PacketQueue) (time.Duration, bool) {
+func (nr *NoneReorder) PacketHandler(base.Packet) (time.Duration, bool) {
 	return nr.Reorder(), false
 }
 
@@ -69,7 +69,7 @@ func (nr *NormalReorder) Reorder() time.Duration {
 	return 0
 }
 
-func (nr *NormalReorder) PacketHandler([]byte, *base.PacketQueue) (time.Duration, bool) {
+func (nr *NormalReorder) PacketHandler(base.Packet) (time.Duration, bool) {
 	return nr.Reorder(), false
 }
 
@@ -120,6 +120,6 @@ func (gr *GapReorder) Reorder() time.Duration {
 	return 0
 }
 
-func (gr *GapReorder) PacketHandler([]byte, *base.PacketQueue) (time.Duration, bool) {
+func (gr *GapReorder) PacketHandler(base.Packet) (time.Duration, bool) {
 	return gr.Reorder(), false
 }
