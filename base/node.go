@@ -3,7 +3,7 @@ package base
 // Node Indicates a simulated node in the network
 type Node interface {
 	Name() string
-	Send(packet *Packet) // Send a packet to the node
+	Send(packet []byte) // Send a packet to the node
 	Packets() *PacketBuffer
 	Emit(packet *SimulatedPacket)
 	GetNext() []Node

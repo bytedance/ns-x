@@ -1,17 +1,17 @@
 package main
 
 import (
-	"byte-ns"
-	"byte-ns/base"
-	"byte-ns/math"
-	"byte-ns/node"
 	"math/rand"
+	"ns-x"
+	"ns-x/base"
+	"ns-x/math"
+	"ns-x/node"
 )
 
 func main() {
 	source := rand.NewSource(0)
 	random := rand.New(source)
-	helper := byte_ns.NewBuilder()
+	helper := ns_x.NewBuilder()
 	callback := func(packet *base.SimulatedPacket) {
 		println("emit packet")
 		println(packet.String())
@@ -32,10 +32,10 @@ func main() {
 	entry2 := nodes["entry2"]
 	endpoint := nodes["endpoint"].(*node.EndpointNode)
 	for i := 0; i < 20; i++ {
-		entry1.Send(&base.Packet{Data: []byte{0x01, 0x02}})
+		entry1.Send([]byte{0x01, 0x02})
 	}
 	for i := 0; i < 20; i++ {
-		entry2.Send(&base.Packet{Data: []byte{0x01, 0x02}})
+		entry2.Send([]byte{0x01, 0x02})
 	}
 	count := 0
 	for {

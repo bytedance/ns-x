@@ -1,17 +1,16 @@
 package node
 
 import (
-	"byte-ns/base"
-	time2 "byte-ns/time"
 	"go.uber.org/atomic"
 	"math"
+	"ns-x/base"
 	"time"
 )
 
 // RestrictNode simulate a node with limited ability
 // Once Packets through a RestrictNode reaches the limit(in bps or pps), the later Packets will be put in a buffer
 // Once the buffer overflow, later Packets will be discarded
-// The the buffer limit will not be accurate, usually a little lower than specified, since it takes time(usually less than microseconds) to send Packets
+// The buffer limit will not be accurate, usually a little lower than specified, since it takes time(usually less than microseconds) to send Packets
 type RestrictNode struct {
 	BasicNode
 	ppsLimit, bpsLimit                float64
@@ -35,29 +34,29 @@ func NewRestrictNode(name string, recordSize int, onEmitCallback base.OnEmitCall
 		bufferCountLimit: bufferCountLimit,
 		bufferSize:       atomic.NewInt64(0),
 		bufferCount:      atomic.NewInt64(0),
-		emitTime:         time2.Now(),
+		emitTime:         time.Now(),
 	}
 }
 
 func (r *RestrictNode) Emit(packet *base.SimulatedPacket) {
 	r.BasicNode.Emit(packet)
-	r.bufferSize.Sub(int64(len(packet.Actual.Data)))
+	r.bufferSize.Sub(int64(len(packet.Actual)))
 	r.bufferCount.Dec()
 }
 
-func (r *RestrictNode) Send(packet *base.Packet) {
+func (r *RestrictNode) Send(packet []byte) {
 	if r.bufferSize.Load() >= r.bufferSizeLimit || r.bufferCount.Load() >= r.bufferCountLimit {
 		return
 	}
-	sentTime := time2.Now()
+	sentTime := time.Now()
 	if r.emitTime.Before(sentTime) {
 		r.emitTime = sentTime
 	}
 	emitTime := r.emitTime
 	p := &base.SimulatedPacket{Actual: packet, EmitTime: emitTime, SentTime: sentTime, Loss: false, Where: r}
-	step := math.Max(1.0/r.ppsLimit, float64(len(packet.Data))/r.bpsLimit)
+	step := math.Max(1.0/r.ppsLimit, float64(len(packet))/r.bpsLimit)
 	r.emitTime = emitTime.Add(time.Duration(step*1000*1000) * time.Microsecond)
-	r.bufferSize.Add(int64(len(packet.Data)))
+	r.bufferSize.Add(int64(len(packet)))
 	r.bufferCount.Inc()
 	r.Packets().Insert(p)
 	r.BasicNode.OnSend(p)

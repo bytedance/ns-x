@@ -1,4 +1,4 @@
-module byte-ns
+module ns-x
 
 go 1.16
 

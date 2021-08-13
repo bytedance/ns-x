@@ -1,8 +1,8 @@
 package node
 
 import (
-	"byte-ns/base"
-	"byte-ns/time"
+	"ns-x/base"
+	"time"
 )
 
 // BroadcastNode is a node broadcast any packet pass by to all its next node
@@ -18,7 +18,7 @@ func NewBroadcastNode(name string, callback base.OnEmitCallback) *BroadcastNode 
 	}
 }
 
-func (b *BroadcastNode) Send(packet *base.Packet) {
+func (b *BroadcastNode) Send(packet []byte) {
 	for _, n := range b.next {
 		n.Send(packet)
 	}

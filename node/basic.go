@@ -1,7 +1,7 @@
 package node
 
 import (
-	"byte-ns/base"
+	"ns-x/base"
 )
 
 // BasicNode is skeleton implementation of Node
@@ -56,7 +56,7 @@ func (n *BasicNode) Emit(packet *base.SimulatedPacket) {
 	}
 }
 
-func (n *BasicNode) Send(packet *base.Packet) {
+func (n *BasicNode) Send(packet []byte) {
 	panic("not implemented")
 }
 

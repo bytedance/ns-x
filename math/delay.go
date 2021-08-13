@@ -1,45 +1,42 @@
 package math
 
 import (
-	"byte-ns/base"
-	node2 "byte-ns/node"
 	"math/rand"
+	"ns-x/base"
+	"ns-x/node"
 	"time"
 )
 
 type Delay interface {
-	Delay() time.Duration   // 返回具体延迟（包含jitter）
-	Average() time.Duration // 返回参数 average
-	Jitter() time.Duration  // 返回 jitter 结果
+	Delay() time.Duration   // Actual Delay duration (include jitter)
+	Average() time.Duration // Average delay duration
+	Jitter() time.Duration  // Jitter delay duration
 }
 
-// basicDelay 是 Delay 共同约定使用的变量
+// basicDelay skeleton implementation of Delay
 type basicDelay struct {
-	average time.Duration // 平均延迟 单位 ms
-	jitter  time.Duration // 单位 ms
-	random  *rand.Rand    // 节点统一的随机数生成器
+	average time.Duration
+	jitter  time.Duration
+	random  *rand.Rand
 }
 
-// Average 返回参数 average
 func (bd *basicDelay) Average() time.Duration {
 	return bd.average
 }
 
-// Jitter 返回参数 jitter
 func (bd *basicDelay) Jitter() time.Duration {
 	jitter := float64(bd.jitter.Microseconds())
 	return time.Duration((2*bd.random.Float64()-1)*jitter) * time.Microsecond
 }
 
-// FixedDelay 无分布，每次均为 average
+// FixedDelay delay fixed duration
 type FixedDelay struct {
 	*basicDelay
 }
 
 var _ Delay = &FixedDelay{}
 
-// NewFixedDelay 创建一个无分布延迟模型处理函数，average，jitter 单位是 ms
-func NewFixedDelay(average time.Duration, jitter time.Duration, random *rand.Rand) node2.PacketHandler {
+func NewFixedDelay(average time.Duration, jitter time.Duration, random *rand.Rand) node.PacketHandler {
 	delay := &FixedDelay{
 		&basicDelay{
 			average: average,
@@ -54,11 +51,11 @@ func (nd *FixedDelay) Delay() time.Duration {
 	return nd.Average() + nd.Jitter()
 }
 
-func (nd *FixedDelay) PacketHandler(*base.Packet, *base.PacketQueue) (time.Duration, bool) {
+func (nd *FixedDelay) PacketHandler([]byte, *base.PacketQueue) (time.Duration, bool) {
 	return nd.Delay(), false
 }
 
-// NormalDelay 正态分布，大体在 [average-3*sigma,average+3*sigma] 范围
+// NormalDelay delay duration of normal distribution
 type NormalDelay struct {
 	*basicDelay
 	sigma time.Duration
@@ -66,7 +63,7 @@ type NormalDelay struct {
 
 var _ Delay = &NormalDelay{}
 
-func NewNormalDelay(average, jitter, sigma time.Duration, random *rand.Rand) node2.PacketHandler {
+func NewNormalDelay(average, jitter, sigma time.Duration, random *rand.Rand) node.PacketHandler {
 	delay := &NormalDelay{
 		&basicDelay{
 			average: average,
@@ -83,18 +80,18 @@ func (nd *NormalDelay) Delay() time.Duration {
 	return time.Duration(nd.random.NormFloat64()*sigma)*time.Microsecond + nd.Average() + nd.Jitter()
 }
 
-func (nd *NormalDelay) PacketHandler(*base.Packet, *base.PacketQueue) (time.Duration, bool) {
+func (nd *NormalDelay) PacketHandler([]byte, *base.PacketQueue) (time.Duration, bool) {
 	return nd.Delay(), false
 }
 
-// UniformDelay 均匀分布，[0,2*average) 范围内
+// UniformDelay delay duration of uniform distribution
 type UniformDelay struct {
 	*basicDelay
 }
 
 var _ Delay = &UniformDelay{}
 
-func NewUniformDelay(average, jitter time.Duration, random *rand.Rand) node2.PacketHandler {
+func NewUniformDelay(average, jitter time.Duration, random *rand.Rand) node.PacketHandler {
 	delay := &UniformDelay{
 		&basicDelay{
 			average: average,
@@ -110,6 +107,6 @@ func (ud *UniformDelay) Delay() time.Duration {
 	return time.Duration(ud.random.Float64()*average*2)*time.Microsecond + ud.Jitter()
 }
 
-func (ud *UniformDelay) PacketHandler(*base.Packet, *base.PacketQueue) (time.Duration, bool) {
+func (ud *UniformDelay) PacketHandler([]byte, *base.PacketQueue) (time.Duration, bool) {
 	return ud.Delay(), false
 }

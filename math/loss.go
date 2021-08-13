@@ -1,19 +1,17 @@
 package math
 
 import (
-	"byte-ns/base"
-	node2 "byte-ns/node"
 	"math/rand"
+	"ns-x/base"
+	node2 "ns-x/node"
 	"time"
 )
 
-// Loss 接口，
-// 目前有不丢包，单一概率丢包模型和 Gilbert 模型丢包 三种具体实现
 type Loss interface {
-	Loss() bool // 若返回 true 则丢包
+	Loss() bool // the packet Loss if true
 }
 
-// NoneLoss 不丢包
+// NoneLoss no loss
 type NoneLoss struct {
 }
 
@@ -28,11 +26,11 @@ func (nl *NoneLoss) Loss() bool {
 	return false
 }
 
-func (nl *NoneLoss) PacketHandler(*base.Packet, *base.PacketQueue) (time.Duration, bool) {
+func (nl *NoneLoss) PacketHandler([]byte, *base.PacketQueue) (time.Duration, bool) {
 	return 0, nl.Loss()
 }
 
-// RandomLoss 单一概率丢包模型
+// RandomLoss loss with the given possibility
 type RandomLoss struct {
 	possibility float64
 	random      *rand.Rand
@@ -52,12 +50,11 @@ func (rl *RandomLoss) Loss() bool {
 	return rl.random.Float64() < rl.possibility
 }
 
-func (rl *RandomLoss) PacketHandler(*base.Packet, *base.PacketQueue) (time.Duration, bool) {
+func (rl *RandomLoss) PacketHandler([]byte, *base.PacketQueue) (time.Duration, bool) {
 	return 0, rl.Loss()
 }
 
-// GilbertLoss Gilbert丢包模型
-// 有两个状态，分别有一个丢包概率和一个状态变迁概率
+// GilbertLoss Gilbert Loss Model
 type GilbertLoss struct {
 	s1Loss, s1Transit, s2Loss, s2Transit float64
 	gilbertState                         int
@@ -90,6 +87,6 @@ func (gl *GilbertLoss) Loss() bool {
 	return gl.random.Float64() < gl.s2Loss
 }
 
-func (gl *GilbertLoss) PacketHandler(*base.Packet, *base.PacketQueue) (time.Duration, bool) {
+func (gl *GilbertLoss) PacketHandler([]byte, *base.PacketQueue) (time.Duration, bool) {
 	return 0, gl.Loss()
 }

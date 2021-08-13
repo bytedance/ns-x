@@ -1,11 +1,11 @@
-package byte_ns
+package ns_x
 
 import (
-	"byte-ns/base"
-	"byte-ns/time"
 	"container/heap"
 	"go.uber.org/atomic"
+	"ns-x/base"
 	"runtime"
+	"time"
 )
 
 // Network Indicates a simulated network, which contains some simulated nodes
