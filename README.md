@@ -215,3 +215,4 @@ limit.
 * ~~parallelize main loop~~ (done)
 * implement commonly used protocol stack as a new node type
 * separate send and pass to avoid cumulative error
+* Buffer overflow determination of *restrict node* should have a more accurate way
