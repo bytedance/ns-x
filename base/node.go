@@ -2,14 +2,14 @@ package base
 
 import "time"
 
-// Node Indicates a simulated node in the network
+// Node indicates a simulated node in the network
 type Node interface {
 	Name() string
-	Transfer(packet Packet, now time.Time) []Event
+	Check()
 	GetNext() []Node
 	SetNext(nodes ...Node)
-	Check()
+	Transfer(packet Packet, now time.Time) []Event
 }
 
-// TransferCallback called when a packet is emitted
+// TransferCallback called when a packet is transferred
 type TransferCallback func(packet Packet, target Node, now time.Time)

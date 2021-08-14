@@ -56,10 +56,10 @@ func (n *RestrictNode) Transfer(packet base.Packet, now time.Time) []base.Event 
 	n.bufferSize.Add(int64(packet.Size()))
 	n.bufferCount.Inc()
 	return base.Aggregate(
-		base.NewFixedEvent(func() []base.Event {
+		base.NewFixedEvent(func(t time.Time) []base.Event {
 			n.bufferSize.Sub(int64(packet.Size()))
 			n.bufferCount.Dec()
-			return n.ActualEmit(packet, n.next[0], t)
+			return n.ActualTransfer(packet, n.next[0], t)
 		}, t),
 	)
 }

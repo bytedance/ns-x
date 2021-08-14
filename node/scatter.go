@@ -25,8 +25,8 @@ func (s *ScatterNode) Transfer(packet base.Packet, now time.Time) []base.Event {
 	path := s.selector(packet, s.next)
 	if path != nil {
 		return base.Aggregate(
-			base.NewFixedEvent(func() []base.Event {
-				return s.ActualEmit(packet, path, now)
+			base.NewFixedEvent(func(t time.Time) []base.Event {
+				return s.ActualTransfer(packet, path, t)
 			}, now),
 		)
 	}

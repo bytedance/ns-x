@@ -36,13 +36,14 @@ func (n *Network) fetch(packetHeap heap.Interface) {
 
 // drain the given heap if possible, and OnEmit the Events available
 func (n *Network) drain(packetHeap *base.EventHeap) {
-	t := time.Now()
+	now := time.Now()
 	for !packetHeap.IsEmpty() {
 		p := packetHeap.Peek()
-		if p.Time().After(t) {
+		t := p.Time()
+		if t.After(now) {
 			break
 		}
-		events := p.Action()()
+		events := p.Action()(t)
 		heap.Pop(packetHeap)
 		for _, event := range events {
 			heap.Push(packetHeap, event)

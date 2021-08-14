@@ -19,8 +19,8 @@ func (n *GatherNode) Transfer(packet base.Packet, now time.Time) []base.Event {
 		panic("gather node can only has single connection")
 	}
 	return base.Aggregate(
-		base.NewFixedEvent(func() []base.Event {
-			return n.ActualEmit(packet, n.next[0], now)
+		base.NewFixedEvent(func(t time.Time) []base.Event {
+			return n.ActualTransfer(packet, n.next[0], t)
 		}, now),
 	)
 }
