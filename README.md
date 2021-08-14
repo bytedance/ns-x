@@ -216,3 +216,8 @@ limit.
 * implement commonly used protocol stack as a new node type
 * separate send and pass to avoid cumulative error
 * Buffer overflow determination of *restrict node* should have a more accurate way
+
+#### Contributors
+<a href="https://github.com/remarkablemark/html-react-parser/graphs/contributors">
+  <img src="https://opencollective.com/html-react-parser/contributors.svg?width=890&button=false">
+</a>
