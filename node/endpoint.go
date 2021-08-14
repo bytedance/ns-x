@@ -11,27 +11,36 @@ type EndpointNode struct {
 	callback func(packet base.Packet, now time.Time)
 }
 
-func NewEndpointNode(name string, callback base.OnEmitCallback) *EndpointNode {
+func NewEndpointNode(name string, callback base.TransferCallback) *EndpointNode {
 	return &EndpointNode{
 		BasicNode: NewBasicNode(name, callback),
 	}
 }
 
-func (n *EndpointNode) Emit(packet base.Packet, now time.Time) {
+func (n *EndpointNode) Transfer(packet base.Packet, now time.Time) []base.Event {
 	if n.callback != nil {
 		n.callback(packet, now)
 	}
+	return nil
 }
 
-func (n *EndpointNode) Send(packet base.Packet) {
-	now := time.Now()
-	for _, node := range n.next {
-		n.Events().Insert(base.NewFixedEvent(func() {
-			n.ActualEmit(packet, node, now)
-		}, now))
-	}
+func (n EndpointNode) SendAt(packet base.Packet, t time.Time) base.Event {
+	return base.NewFixedEvent(func() []base.Event {
+		return n.ActualEmit(packet, n.next[0], t)
+	}, t)
+}
+
+func (n *EndpointNode) Send(packet base.Packet) base.Event {
+	return n.SendAt(packet, time.Now())
 }
 
 func (n *EndpointNode) Receive(callback func(packet base.Packet, now time.Time)) {
 	n.callback = callback
+}
+
+func (n *EndpointNode) Check() {
+	if n.next == nil || len(n.next) != 1 {
+		panic("endpoint node can only has single connection")
+	}
+	n.BasicNode.Check()
 }

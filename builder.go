@@ -117,7 +117,7 @@ func (b *builder) Build(loopLimit, emptySpinLimit, splitThreshold int) (*Network
 		println(b.toString(node, index))
 	}
 	println()
-	return NewNetwork(nodes, loopLimit, emptySpinLimit, splitThreshold), b.names
+	return NewNetwork(nodes), b.names
 }
 
 func (b *builder) toString(node base.Node, index int) string {

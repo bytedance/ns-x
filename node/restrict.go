@@ -20,10 +20,10 @@ type RestrictNode struct {
 }
 
 // NewRestrictNode create a new restrict with the given parameter
-// next, recordSize, onEmitCallback the same as BasicNode
+// next, recordSize, callback the same as BasicNode
 // ppsLimit, bpsLimit: the limit of Events per second/bytes per second
 // bufferSizeLimit, bufferCountLimit: the limit of waiting Events, in bytes/Events
-func NewRestrictNode(name string, onEmitCallback base.OnEmitCallback, ppsLimit, bpsLimit float64, bufferSizeLimit, bufferCountLimit int64) *RestrictNode {
+func NewRestrictNode(name string, onEmitCallback base.TransferCallback, ppsLimit, bpsLimit float64, bufferSizeLimit, bufferCountLimit int64) *RestrictNode {
 	return &RestrictNode{
 		BasicNode:        NewBasicNode(name, onEmitCallback),
 		ppsLimit:         ppsLimit,
@@ -36,10 +36,10 @@ func NewRestrictNode(name string, onEmitCallback base.OnEmitCallback, ppsLimit, 
 	}
 }
 
-func (n *RestrictNode) Emit(packet base.Packet, now time.Time) {
+func (n *RestrictNode) Transfer(packet base.Packet, now time.Time) []base.Event {
 	// TODO: an accurate way to determine buffer overflow
 	if n.bufferSize.Load() >= n.bufferSizeLimit || n.bufferCount.Load() >= n.bufferCountLimit {
-		return
+		return nil
 	}
 	flag := true
 	for flag {
@@ -55,11 +55,13 @@ func (n *RestrictNode) Emit(packet base.Packet, now time.Time) {
 	t := time.Unix(0, n.busyTime.Add(delta)-delta)
 	n.bufferSize.Add(int64(packet.Size()))
 	n.bufferCount.Inc()
-	n.Events().Insert(base.NewFixedEvent(func() {
-		n.ActualEmit(packet, n.next[0], t)
-		n.bufferSize.Sub(int64(packet.Size()))
-		n.bufferCount.Dec()
-	}, t))
+	return base.Aggregate(
+		base.NewFixedEvent(func() []base.Event {
+			n.bufferSize.Sub(int64(packet.Size()))
+			n.bufferCount.Dec()
+			return n.ActualEmit(packet, n.next[0], t)
+		}, t),
+	)
 }
 
 func (n *RestrictNode) Check() {

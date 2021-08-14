@@ -12,16 +12,18 @@ type BroadcastNode struct {
 }
 
 // NewBroadcastNode creates a new BroadcastNode with given Node(s)
-func NewBroadcastNode(name string, callback base.OnEmitCallback) *BroadcastNode {
+func NewBroadcastNode(name string, callback base.TransferCallback) *BroadcastNode {
 	return &BroadcastNode{
 		BasicNode: NewBasicNode(name, callback),
 	}
 }
 
-func (n *BroadcastNode) Emit(packet base.Packet, now time.Time) {
-	for _, node := range n.next {
-		n.Events().Insert(base.NewFixedEvent(func() {
-			n.ActualEmit(packet, node, now)
-		}, now))
+func (n *BroadcastNode) Transfer(packet base.Packet, now time.Time) []base.Event {
+	events := make([]base.Event, len(n.next))
+	for index, node := range n.next {
+		events[index] = base.NewFixedEvent(func() []base.Event {
+			return n.ActualEmit(packet, node, now)
+		}, now)
 	}
+	return events
 }

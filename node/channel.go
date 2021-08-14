@@ -29,14 +29,14 @@ type ChannelNode struct {
 }
 
 // NewChannelNode creates a new channel
-func NewChannelNode(name string, onEmitCallback base.OnEmitCallback, handler PacketHandler) *ChannelNode {
+func NewChannelNode(name string, onEmitCallback base.TransferCallback, handler PacketHandler) *ChannelNode {
 	return &ChannelNode{
 		BasicNode: NewBasicNode(name, onEmitCallback),
 		handler:   handler,
 	}
 }
 
-func (n *ChannelNode) Emit(packet base.Packet, now time.Time) {
+func (n *ChannelNode) Transfer(packet base.Packet, now time.Time) []base.Event {
 	delay := time.Duration(0)
 	loss := false
 	if n.handler != nil {
@@ -45,10 +45,13 @@ func (n *ChannelNode) Emit(packet base.Packet, now time.Time) {
 		loss = loss || l
 	}
 	if !loss {
-		n.Events().Insert(base.NewDelayedEvent(func(t time.Time) {
-			n.ActualEmit(packet, n.next[0], t)
-		}, delay, now))
+		return base.Aggregate(
+			base.NewDelayedEvent(func(t time.Time) []base.Event {
+				return n.ActualEmit(packet, n.next[0], t)
+			}, delay, now),
+		)
 	}
+	return nil
 }
 
 func (n *ChannelNode) Check() {

@@ -6,29 +6,33 @@ import (
 
 type Event interface {
 	Time() time.Time
-	Action() func()
+	Action() func() []Event
 }
 
 type event struct {
 	time   time.Time
-	action func()
+	action func() []Event
 }
 
 func (e *event) Time() time.Time {
 	return e.time
 }
 
-func (e *event) Action() func() {
+func (e *event) Action() func() []Event {
 	return e.action
 }
 
-func NewDelayedEvent(action func(time.Time), delay time.Duration, now time.Time) Event {
+func Aggregate(events ...Event) []Event {
+	return events
+}
+
+func NewDelayedEvent(action func(time.Time) []Event, delay time.Duration, now time.Time) Event {
 	t := now.Add(delay)
-	return NewFixedEvent(func() {
-		action(t)
+	return NewFixedEvent(func() []Event {
+		return action(t)
 	}, t)
 }
 
-func NewFixedEvent(action func(), time time.Time) Event {
+func NewFixedEvent(action func() []Event, time time.Time) Event {
 	return &event{time: time, action: action}
 }

@@ -14,18 +14,21 @@ type ScatterNode struct {
 	selector RouteSelector
 }
 
-func NewScatterNode(name string, selector RouteSelector, callback base.OnEmitCallback) *ScatterNode {
+func NewScatterNode(name string, selector RouteSelector, callback base.TransferCallback) *ScatterNode {
 	return &ScatterNode{
 		BasicNode: NewBasicNode(name, callback),
 		selector:  selector,
 	}
 }
 
-func (s *ScatterNode) Emit(packet base.Packet, now time.Time) {
+func (s *ScatterNode) Transfer(packet base.Packet, now time.Time) []base.Event {
 	path := s.selector(packet, s.next)
 	if path != nil {
-		s.Events().Insert(base.NewFixedEvent(func() {
-			s.ActualEmit(packet, path, now)
-		}, now))
+		return base.Aggregate(
+			base.NewFixedEvent(func() []base.Event {
+				return s.ActualEmit(packet, path, now)
+			}, now),
+		)
 	}
+	return nil
 }
