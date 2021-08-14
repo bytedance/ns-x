@@ -220,7 +220,7 @@ limit.
 #### Contributors
 
 <a href="https://github.com/bytedance/ns-x/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=bytedance/ns-x" />
+    <img src="https://contrib.rocks/image?repo=bytedance/ns-x"  alt="contributors"/>
 </a>
 
 Made with [contributors-img](https://contrib.rocks).
