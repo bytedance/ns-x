@@ -216,3 +216,4 @@ limit.~~ (deprecated since it's hard to guarantee order of events, should be sol
 * implement commonly used protocol stack as a new node type
 * ~~separate send and pass to avoid cumulative error~~ (done)
 * Buffer overflow determination of *restrict node* should have a more accurate way
+* split event heap when size of heap is large enough
