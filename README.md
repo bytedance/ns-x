@@ -77,17 +77,17 @@ While nodes are highly customizable, some typical nodes are pre-defined as follo
 
 * Scatter: a node selects which node the incoming packet should be route to according to a given rule.
 
-```mermaid
-graph LR
-  In --> Scatter -.-> Out1
-  Scatter -->|Selected Route| Out2
-  Scatter -.-> Out3
-```
+    ```mermaid
+    graph LR
+      In --> Scatter -.-> Out1
+      Scatter -->|Selected Route| Out2
+      Scatter -.-> Out3
+    ```
 
 After all necessary *node*s created, *connect* them to build the network. To do so, just set the *next node* correctly
 for each *node* to declare the *edge*.
 
-ByteNS also provides a *builder* to facilitate the process. Instead of connecting *edge*s，it builds the network by
+ns-x also provides a *builder* to facilitate the process. Instead of connecting *edge*s，it builds the network by
 connecting all *path*s in one line of code.    
 *Path*, aka *chain*, is similar to the *path* concept in graph theory, representing a route along the *edge*s of a
 graph.
