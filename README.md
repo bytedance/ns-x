@@ -204,9 +204,9 @@ The loop is separated into two parts: fetch and drain.
 
 ~~By now, the main loop lock a single os thread, but in the future, the main loop may run on a fork join pool.~~
 
-Parallelized main loop is already implemented, main loop will split once the packet heap reach a given threshold, and
+~~Parallelized main loop is already implemented, main loop will split once the packet heap reach a given threshold, and
 exit after spinning a fixed rounds without any task. The active main loop will always exist but no more than a given
-limit.
+limit.~~ (deprecated since it's hard to guarantee order of events, should be solved by separate multiple events heap)
 
 ## Contribution
 
@@ -214,5 +214,5 @@ limit.
 
 * ~~parallelize main loop~~ (done)
 * implement commonly used protocol stack as a new node type
-* separate send and pass to avoid cumulative error
+* ~~separate send and pass to avoid cumulative error~~ (done)
 * Buffer overflow determination of *restrict node* should have a more accurate way
