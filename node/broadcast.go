@@ -21,8 +21,8 @@ func NewBroadcastNode(name string, callback base.TransferCallback) *BroadcastNod
 func (n *BroadcastNode) Transfer(packet base.Packet, now time.Time) []base.Event {
 	events := make([]base.Event, len(n.next))
 	for index, node := range n.next {
-		events[index] = base.NewFixedEvent(func() []base.Event {
-			return n.ActualEmit(packet, node, now)
+		events[index] = base.NewFixedEvent(func(t time.Time) []base.Event {
+			return n.ActualTransfer(packet, node, t)
 		}, now)
 	}
 	return events

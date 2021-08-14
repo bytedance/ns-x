@@ -25,7 +25,7 @@ func (n *BasicNode) Name() string {
 	return n.name
 }
 
-func (n *BasicNode) ActualEmit(packet base.Packet, target base.Node, now time.Time) []base.Event {
+func (n *BasicNode) ActualTransfer(packet base.Packet, target base.Node, now time.Time) []base.Event {
 	if n.callback != nil {
 		n.callback(packet, target, now)
 	}
