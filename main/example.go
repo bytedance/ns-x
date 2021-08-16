@@ -40,13 +40,13 @@ func main() {
 			println("total", count.Load(), "packets received")
 		}
 	})
+	for i := 0; i < 20; i++ {
+		network.Event(entry1.Send(base.RawPacket([]byte{0x01, 0x02})))
+	}
+	for i := 0; i < 20; i++ {
+		network.Event(entry2.Send(base.RawPacket([]byte{0x01, 0x02})))
+	}
 	network.Start()
 	defer network.Stop()
-	for i := 0; i < 20; i++ {
-		entry1.Send(base.RawPacket([]byte{0x01, 0x02}))
-	}
-	for i := 0; i < 20; i++ {
-		entry2.Send(base.RawPacket([]byte{0x01, 0x02}))
-	}
 	time.Sleep(30 * time.Second)
 }
