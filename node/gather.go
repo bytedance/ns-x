@@ -15,7 +15,7 @@ func NewGatherNode(name string) *GatherNode {
 }
 
 func (n *GatherNode) Transfer(packet base.Packet, now time.Time) []base.Event {
-	if n.next == nil || len(n.next) != 1 {
+	if len(n.next) != 1 {
 		panic("gather node can only has single connection")
 	}
 	return base.Aggregate(

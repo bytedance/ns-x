@@ -55,7 +55,7 @@ func (n *ChannelNode) Transfer(packet base.Packet, now time.Time) []base.Event {
 }
 
 func (n *ChannelNode) Check() {
-	if n.next == nil || len(n.next) != 1 {
+	if len(n.next) != 1 {
 		panic("channel node can only has single connection")
 	}
 	n.BasicNode.Check()

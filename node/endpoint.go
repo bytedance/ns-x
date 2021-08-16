@@ -39,8 +39,8 @@ func (n *EndpointNode) Receive(callback func(packet base.Packet, now time.Time))
 }
 
 func (n *EndpointNode) Check() {
-	if n.next == nil || len(n.next) != 1 {
-		panic("endpoint node can only has single connection")
+	if len(n.next) > 1 {
+		panic("endpoint node can has at most single connection")
 	}
 	n.BasicNode.Check()
 }

@@ -63,7 +63,7 @@ func (n *RestrictNode) Transfer(packet base.Packet, now time.Time) []base.Event 
 }
 
 func (n *RestrictNode) Check() {
-	if n.next == nil || len(n.next) != 1 {
+	if len(n.next) != 1 {
 		panic("restrict node can only has single connection")
 	}
 }
