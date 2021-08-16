@@ -22,7 +22,7 @@ type Network struct {
 func NewNetwork(nodes []base.Node) *Network {
 	return &Network{
 		nodes:   nodes,
-		buffer:  &base.EventBuffer{},
+		buffer:  base.NewEventBuffer(),
 		running: atomic.NewBool(false),
 	}
 }
