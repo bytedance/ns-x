@@ -8,8 +8,10 @@ import (
 // EndpointNode is a node to receive Events, Events reached an endpoint will no longer be transmitted
 type EndpointNode struct {
 	*BasicNode
-	callback func(packet base.Packet, now time.Time)
+	callback React
 }
+
+type React func(packet base.Packet, now time.Time) []base.Event
 
 func NewEndpointNode(name string, callback base.TransferCallback) *EndpointNode {
 	return &EndpointNode{
@@ -19,7 +21,7 @@ func NewEndpointNode(name string, callback base.TransferCallback) *EndpointNode 
 
 func (n *EndpointNode) Transfer(packet base.Packet, now time.Time) []base.Event {
 	if n.callback != nil {
-		n.callback(packet, now)
+		return n.callback(packet, now)
 	}
 	return nil
 }
@@ -34,7 +36,7 @@ func (n *EndpointNode) Send(packet base.Packet) base.Event {
 	return n.SendAt(packet, time.Now())
 }
 
-func (n *EndpointNode) Receive(callback func(packet base.Packet, now time.Time)) {
+func (n *EndpointNode) Receive(callback React) {
 	n.callback = callback
 }
 
