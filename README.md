@@ -48,7 +48,6 @@ While nodes are highly customizable, some typical nodes are pre-defined as follo
 <details>
   <summary>Mermaid markup</summary>
 
-
 ```mermaid
 graph LR;
     In --> Broadcast --> Out1;
