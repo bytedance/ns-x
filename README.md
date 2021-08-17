@@ -36,53 +36,55 @@ cases a chain may have multiple node or no node on its ends.
 
 While nodes are highly customizable, some typical nodes are pre-defined as follows:
 
-* Broadcast: a node transfers packet from one source to multiple targets.
+<!-- note that mermaid compilation of GitHub action only supports code blocks with no indents -->
 
-    ```mermaid
-    graph LR;
-        In --> Broadcast --> Out1;
-        Broadcast --> Out2;
-        Broadcast --> Out3;
-    ```
+* Broadcast: a node transfers packet from one source to multiple targets.
+  
+```mermaid
+graph LR;
+    In --> Broadcast --> Out1;
+    Broadcast --> Out2;
+    Broadcast --> Out3;
+```
 
 * Channel: a node delays, losses or reorders packets passing by.
 
-    ```mermaid
-    graph LR;
-        In --> Channel -->|Loss & Delay & Reorder| Out;
-    ```
+```mermaid
+graph LR;
+    In --> Channel -->|Loss & Delay & Reorder| Out;
+```
 
 * Endpoint: a node only accepts incoming packets, usually acting as the end of a chain.
 
-    ```mermaid
-    graph LR;
-        Nodes... --> Endpoint;
-    ```
+```mermaid
+graph LR;
+   Nodes... --> Endpoint;
+```
 
 * Gather: a node gathers packets from multiple sources to a single target.
 
-    ```mermaid
-    graph LR;
-        In1 --> Gather ==> Out;
-        In2 --> Gather;
-        In3 --> Gather;
-    ```
+```mermaid
+graph LR;
+    In1 --> Gather ==> Out;
+    In2 --> Gather;
+    In3 --> Gather;
+```
 
 * Restrict: a node limits pps or bps by dropping packets when its internal buffer overflows.
 
-    ```mermaid
-    graph LR;
-        In --> Restrict -->|Restricted Speed| Out;
-    ```
+```mermaid
+graph LR;
+    In --> Restrict -->|Restricted Speed| Out;
+```
 
 * Scatter: a node selects which node the incoming packet should be route to according to a given rule.
 
-    ```mermaid
-    graph LR;
-        In --> Scatter -.-> Out1;
-        Scatter -->|Selected Route| Out2;
-        Scatter -.-> Out3;
-    ```
+```mermaid
+graph LR;
+    In --> Scatter -.-> Out1;
+    Scatter -->|Selected Route| Out2;
+    Scatter -.-> Out3;
+```
 
 After all necessary *node*s created, *connect* them to build the network. To do so, just set the *next node* correctly
 for each *node* to declare the *edge*.
