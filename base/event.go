@@ -45,11 +45,12 @@ func NewPeriodicEvent(action Action, period time.Duration, t time.Time) (Event, 
 	flag := atomic.NewBool(true)
 	var actualAction func(now time.Time) []Event
 	actualAction = func(now time.Time) []Event {
-		events := action(now)
 		if flag.Load() {
+			events := action(now)
 			events = append(events, NewFixedEvent(actualAction, now.Add(period)))
+			return events
 		}
-		return events
+		return nil
 	}
 	return NewFixedEvent(actualAction, t), func() {
 		flag.Store(false)
