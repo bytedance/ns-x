@@ -39,10 +39,10 @@ While nodes are highly customizable, some typical nodes are pre-defined as follo
 * Broadcast: a node transfers packet from one source to multiple targets.
 
 ```mermaid
-    graph LR
-        In --> Broadcast --> Out1
-        Broadcast --> Out2
-        Broadcast --> Out3
+graph LR;
+    In --> Broadcast --> Out1;
+    Broadcast --> Out2;
+    Broadcast --> Out3;
 ```
 
 * Channel: a node delays, losses or reorders packets passing by.
