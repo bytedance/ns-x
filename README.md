@@ -224,3 +224,13 @@ limit.
 </a>
 
 Made with [contributors-img](https://contrib.rocks).
+
+```mermaid
+graph TD;
+    A-->B;
+    A-->C;
+    B-->D;
+    C-->D;
+    W-->D;
+    E-->Z;
+```
