@@ -224,3 +224,5 @@ limit.
 </a>
 
 Made with [contributors-img](https://contrib.rocks).
+
+Mermaid compile test
