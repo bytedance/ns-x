@@ -31,7 +31,7 @@ jobs:
         env:
           HIDE_CODEBLOCKS: 1
           ABSOLUTE_IMAGE_LINKS: 1
-          OUTPUT_FILE_TYPE: "png"
+          OUTPUT_FILE_TYPE: "svg"
 
       - name: show changes
         run: |
@@ -41,7 +41,8 @@ jobs:
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git commit -m "Add changes" -a
+          git commit -m "mermaid compiled" -a
+          git add .resources/*.svg
 
       - name: Push changes
         uses: ad-m/github-push-action@master
