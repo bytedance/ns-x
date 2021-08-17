@@ -41,8 +41,8 @@ jobs:
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git commit -m "mermaid compiled" -a
           git add .resources/*.svg
+          git commit -m "mermaid compiled" -a
 
       - name: Push changes
         uses: ad-m/github-push-action@master
