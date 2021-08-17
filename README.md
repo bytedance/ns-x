@@ -40,6 +40,7 @@ While nodes are highly customizable, some typical nodes are pre-defined as follo
 
     ```mermaid
     graph LR
+  
       In --> Broadcast --> Out1
       Broadcast --> Out2
       Broadcast --> Out3
@@ -49,6 +50,7 @@ While nodes are highly customizable, some typical nodes are pre-defined as follo
 
     ```mermaid
     graph LR
+  
       In --> Channel -->|Loss & Delay & Reorder| Out
     ```
 
@@ -56,6 +58,7 @@ While nodes are highly customizable, some typical nodes are pre-defined as follo
 
     ```mermaid
     graph LR
+  
       Nodes... --> Endpoint
     ```
 
@@ -63,6 +66,7 @@ While nodes are highly customizable, some typical nodes are pre-defined as follo
 
     ```mermaid
     graph LR
+  
       In1 --> Gather ==> Out
       In2 --> Gather
       In3 --> Gather
@@ -72,6 +76,7 @@ While nodes are highly customizable, some typical nodes are pre-defined as follo
 
     ```mermaid
     graph LR
+  
       In --> Restrict -->|Restricted Speed| Out
     ```
 
@@ -79,6 +84,7 @@ While nodes are highly customizable, some typical nodes are pre-defined as follo
 
     ```mermaid
     graph LR
+  
       In --> Scatter -.-> Out1
       Scatter -->|Selected Route| Out2
       Scatter -.-> Out3
@@ -224,5 +230,3 @@ limit.
 </a>
 
 Made with [contributors-img](https://contrib.rocks).
-
-Mermaid compile test
