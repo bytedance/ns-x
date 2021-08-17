@@ -5,6 +5,8 @@ import (
 	"time"
 )
 
+// TODO: daemon event
+
 type Event interface {
 	Time() time.Time
 	Action() Action

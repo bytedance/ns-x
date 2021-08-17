@@ -5,6 +5,7 @@ import (
 	"go.uber.org/atomic"
 	"ns-x/base"
 	"runtime"
+	"sync"
 	"time"
 )
 
@@ -13,6 +14,7 @@ type Network struct {
 	nodes   []base.Node
 	buffer  *base.EventBuffer
 	running *atomic.Bool
+	wg      *sync.WaitGroup
 }
 
 // NewNetwork creates a network with the given nodes, connections of nodes should be already established.
@@ -24,6 +26,7 @@ func NewNetwork(nodes []base.Node) *Network {
 		nodes:   nodes,
 		buffer:  base.NewEventBuffer(),
 		running: atomic.NewBool(false),
+		wg:      &sync.WaitGroup{},
 	}
 }
 
@@ -62,6 +65,8 @@ func (n *Network) eventLoop(packetHeap *base.EventHeap) {
 	println("network main loop start")
 	runtime.LockOSThread()
 	defer runtime.UnlockOSThread()
+	n.wg.Add(1)
+	defer n.wg.Done()
 	for n.running.Load() {
 		n.fetch(packetHeap)
 		n.drain(packetHeap)
@@ -71,7 +76,7 @@ func (n *Network) eventLoop(packetHeap *base.EventHeap) {
 }
 
 // Start the network to enable packet transmission
-func (n *Network) Start() {
+func (n *Network) Start(events ...base.Event) {
 	if n.running.Load() {
 		return
 	}
@@ -79,14 +84,13 @@ func (n *Network) Start() {
 	for _, node := range n.nodes {
 		node.Check()
 	}
-	go n.eventLoop(&base.EventHeap{})
+	h := &base.EventHeap{Storage: events}
+	heap.Init(h)
+	go n.eventLoop(h)
 }
 
 // Stop the network, release resources
 func (n *Network) Stop() {
 	n.running.Store(false)
-}
-
-func (n *Network) Event(events ...base.Event) {
-	n.buffer.Insert(events...)
+	n.wg.Wait()
 }

@@ -33,20 +33,23 @@ func main() {
 	entry2 := nodes["entry2"].(*node.EndpointNode)
 	endpoint := nodes["endpoint"].(*node.EndpointNode)
 	count := atomic.NewInt64(0)
-	endpoint.Receive(func(packet base.Packet, now time.Time) {
+	endpoint.Receive(func(packet base.Packet, now time.Time) []base.Event {
 		if packet != nil {
 			count.Inc()
 			println("receive packet at", now.String())
 			println("total", count.Load(), "packets received")
 		}
+		return nil
 	})
+	total := 20
+	events := make([]base.Event, 0, total*2)
 	for i := 0; i < 20; i++ {
-		network.Event(entry1.Send(base.RawPacket([]byte{0x01, 0x02})))
+		events = append(events, entry1.Send(base.RawPacket([]byte{0x01, 0x02})))
 	}
 	for i := 0; i < 20; i++ {
-		network.Event(entry2.Send(base.RawPacket([]byte{0x01, 0x02})))
+		events = append(events, entry2.Send(base.RawPacket([]byte{0x01, 0x02})))
 	}
-	network.Start()
+	network.Start(events...)
 	defer network.Stop()
-	time.Sleep(30 * time.Second)
+	time.Sleep(time.Second)
 }
