@@ -37,7 +37,7 @@ func (n *Network) fetch(packetHeap heap.Interface) {
 	})
 }
 
-// drain the given heap if possible, and OnEmit the Events available
+// drain the given heap if possible, and process the Events available
 func (n *Network) drain(packetHeap *base.EventHeap) {
 	now := time.Now()
 	for !packetHeap.IsEmpty() {
@@ -93,4 +93,8 @@ func (n *Network) Start(events ...base.Event) {
 func (n *Network) Stop() {
 	n.running.Store(false)
 	n.wg.Wait()
+}
+
+func (n *Network) Event(events ...base.Event) {
+	n.buffer.Insert(events...)
 }
