@@ -18,9 +18,6 @@ type Network struct {
 }
 
 // NewNetwork creates a network with the given nodes, connections of nodes should be already established.
-// loopLimit is the limit of parallelized main loops count
-// a main loop will exit once spun emptySpinLimit rounds doing nothing
-// a main loop will try to split into two loops once count of packets waiting to handle reach splitThreshold
 func NewNetwork(nodes []base.Node) *Network {
 	return &Network{
 		nodes:   nodes,
@@ -75,7 +72,7 @@ func (n *Network) eventLoop(packetHeap *base.EventHeap) {
 	println("network main loop end")
 }
 
-// Start the network to enable packet transmission
+// Start the network to enable event process
 func (n *Network) Start(events ...base.Event) {
 	if n.running.Load() {
 		return
