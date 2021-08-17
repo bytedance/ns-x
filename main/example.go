@@ -49,7 +49,13 @@ func main() {
 	for i := 0; i < 20; i++ {
 		events = append(events, entry2.Send(base.RawPacket([]byte{0x01, 0x02})))
 	}
+	event, cancel := base.NewPeriodicEvent(func(t time.Time) []base.Event {
+		println("current time", t.String())
+		return nil
+	}, time.Second, time.Now())
+	events = append(events, event)
 	network.Start(events...)
 	defer network.Stop()
-	time.Sleep(time.Second)
+	time.Sleep(time.Second * 30)
+	cancel()
 }
