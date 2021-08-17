@@ -1,9 +1,9 @@
 # Contributors
 
-Listed by name alphabetically, along with their contributions:
+Listed by name alphabetically with their key contributions:
 
-Ai Xin(Ricardo.A.Evans@gmail.com): design and main code
-Han Rui(hanrui.work@bytedance.com): document and code review
-Li Aoran(liaoran.20@bytedance.com): proto project
-Liu Junjie(liujunjie.0218@bytedance.com): proto project
-Lu Xinyuan(luxinyuan.will40@bytedance.com): test and some ideas
+- Ai Xin (Ricardo.A.Evans@gmail.com): overall design and main code.
+- Han Rui (hanrui.work@bytedance.com): requirements, documents, code review.
+- Li Aoran (liaoran.20@bytedance.com): network loss and re-order models.
+- Liu Junjie (liujunjie.0218@bytedance.com): one-on-one simulator prototype.
+- Lu Xinyuan (luxinyuan.will40@bytedance.com): tests and ideas.
