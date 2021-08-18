@@ -6,6 +6,15 @@ on:
       - '**/*.md'
     branches-ignore:
       - master
+    tags-ignore:
+      - '**'
+  pull_request:
+    paths:
+      - '**/*.md'
+    branches-ignore:
+      - master
+    tags-ignore:
+      - '**'
 
 jobs:
   build:
@@ -49,6 +58,6 @@ jobs:
 
       - name: Push changes
         uses: ad-m/github-push-action@master
-        if: steps.composer-run.outcome == 'success' && steps.composer-run.conclusion == 'success'
+        continue-on-error: true
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
