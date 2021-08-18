@@ -4,6 +4,8 @@ on:
   push:
     paths:
       - '**/*.md'
+    branches-ignore:
+      - master
 
 jobs:
   build:
@@ -38,6 +40,7 @@ jobs:
           git status
 
       - name: Commit files
+        continue-on-error: true
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
@@ -46,5 +49,6 @@ jobs:
 
       - name: Push changes
         uses: ad-m/github-push-action@master
+        if: steps.composer-run.outcome == 'success' && steps.composer-run.conclusion == 'success'
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
