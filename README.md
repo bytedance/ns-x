@@ -1,7 +1,7 @@
 # ns-x
 
 [![Go](https://github.com/bytedance/ns-x/actions/workflows/go.yml/badge.svg)](https://github.com/bytedance/ns-x/actions/workflows/go.yml)
-[![Mermaid](https://github.com/bytedance/ns-x/actions/workflows/mermaid.yml/badge.svg)](https://github.com/bytedance/ns-x/actions/workflows/mermaid.yml)
+[![CodeQL](https://github.com/bytedance/ns-x/actions/workflows/codeql.yml/badge.svg)](https://github.com/bytedance/ns-x/actions/workflows/codeql.yml)
 
 An easy-to-use, flexible **network simulator** library, written mainly in Go.
 
