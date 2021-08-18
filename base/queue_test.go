@@ -22,7 +22,7 @@ func TestQueue(t *testing.T) {
 	}
 }
 
-func TestRecordOverflow(t *testing.T) {
+func TestQueueOverflow(t *testing.T) {
 	ringLength := 100
 	overflowCycle := 3
 	length := 35
@@ -40,7 +40,7 @@ func TestRecordOverflow(t *testing.T) {
 	}
 }
 
-func TestRecordOverflowShouldFail(t *testing.T) {
+func TestQueueOverflowShouldFail(t *testing.T) {
 	ringLength := 100
 	overflowCycle := 3
 	length := 35
@@ -58,7 +58,7 @@ func TestRecordOverflowShouldFail(t *testing.T) {
 	}
 }
 
-func TestRecordOverflowWithDequeue(t *testing.T) {
+func TestQueueOverflowWithDequeue(t *testing.T) {
 	ringLength := 100
 	overflowCycle := 1
 	length := 37
