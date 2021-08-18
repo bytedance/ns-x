@@ -9,15 +9,15 @@ import (
 func TestQueue(t *testing.T) {
 	length := 1000
 	it := 0
-	ring := NewPacketQueue(length)
-	packets := make([]*SimulatedPacket, length)
+	ring := NewDataQueue(length)
+	data := make([]interface{}, length)
 	for i := 0; i < length; i++ {
-		packets[i] = &SimulatedPacket{}
-		ring.Enqueue(packets[i])
+		data[i] = i
+		ring.Enqueue(data[i])
 	}
 	assert.Equal(t, length, ring.Length())
 	for ring.Length() > 0 {
-		assert.Equal(t, packets[it], ring.Dequeue())
+		assert.Equal(t, data[it], ring.Dequeue())
 		it++
 	}
 }
@@ -27,15 +27,15 @@ func TestRecordOverflow(t *testing.T) {
 	overflowCycle := 3
 	length := 35
 	it := ringLength*overflowCycle + length - ringLength
-	ring := NewPacketQueue(ringLength)
-	packets := make([]*SimulatedPacket, ringLength*overflowCycle+length)
+	ring := NewDataQueue(ringLength)
+	data := make([]interface{}, ringLength*overflowCycle+length)
 	for i := 0; i < ringLength*overflowCycle+length; i++ {
-		packets[i] = &SimulatedPacket{}
-		ring.Enqueue(packets[i])
+		data[i] = i
+		ring.Enqueue(data[i])
 	}
 	assert.Equal(t, ringLength, ring.Length())
 	for ring.Length() > 0 {
-		assert.Equal(t, packets[it], ring.Dequeue())
+		assert.Equal(t, data[it], ring.Dequeue())
 		it++
 	}
 }
@@ -45,15 +45,15 @@ func TestRecordOverflowShouldFail(t *testing.T) {
 	overflowCycle := 3
 	length := 35
 	it := ringLength*overflowCycle + length - ringLength
-	ring := NewPacketQueue(ringLength)
-	packets := make([]*SimulatedPacket, ringLength*overflowCycle+length)
+	ring := NewDataQueue(ringLength)
+	data := make([]interface{}, ringLength*overflowCycle+length)
 	for i := 0; i < ringLength*overflowCycle+length; i++ {
-		packets[i] = &SimulatedPacket{}
-		ring.Enqueue(packets[i])
+		data[i] = i
+		ring.Enqueue(data[i])
 	}
 	assert.Equal(t, ringLength, ring.Length())
 	for ring.Length() > 0 {
-		assert.Equal(t, packets[it], ring.Dequeue())
+		assert.Equal(t, data[it], ring.Dequeue())
 		it++
 	}
 }
@@ -63,15 +63,15 @@ func TestRecordOverflowWithDequeue(t *testing.T) {
 	overflowCycle := 1
 	length := 37
 	it := int(math.Max(float64(ringLength*overflowCycle+length-ringLength), float64(length)))
-	ring := NewPacketQueue(ringLength)
-	packets := make([]*SimulatedPacket, ringLength*overflowCycle+length)
+	ring := NewDataQueue(ringLength)
+	data := make([]interface{}, ringLength*overflowCycle+length)
 	for i := 0; i < ringLength*overflowCycle+length; i++ {
-		packets[i] = &SimulatedPacket{}
-		ring.Enqueue(packets[i])
+		data[i] = i
+		ring.Enqueue(data[i])
 	}
 	assert.Equal(t, ringLength, ring.Length())
 	for ring.Length() > 0 {
-		assert.Equal(t, packets[it], ring.Dequeue())
+		assert.Equal(t, data[it], ring.Dequeue())
 		it++
 	}
 }

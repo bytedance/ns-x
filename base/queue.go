@@ -1,20 +1,20 @@
 package base
 
-// PacketQueue is a ring queue of fixed size, it's usually used as a history record of packets sent in the past
-type PacketQueue struct {
+// DataQueue is a ring queue of fixed size, it's usually used as a history record of data
+type DataQueue struct {
 	head, tail, length int
-	storage            []*SimulatedPacket
+	storage            []interface{}
 }
 
-func NewPacketQueue(length int) *PacketQueue {
-	return &PacketQueue{head: 0, tail: 0, length: length + 1, storage: make([]*SimulatedPacket, length+1)}
+func NewDataQueue(length int) *DataQueue {
+	return &DataQueue{head: 0, tail: 0, length: length + 1, storage: make([]interface{}, length+1)}
 }
 
-func (q *PacketQueue) IsEmpty() bool {
+func (q *DataQueue) IsEmpty() bool {
 	return q.Length() == 0
 }
 
-func (q *PacketQueue) Length() int {
+func (q *DataQueue) Length() int {
 	result := q.tail - q.head
 	for result < 0 {
 		result += q.length
@@ -22,8 +22,8 @@ func (q *PacketQueue) Length() int {
 	return result
 }
 
-func (q *PacketQueue) Enqueue(packet *SimulatedPacket) {
-	q.storage[q.tail] = packet
+func (q *DataQueue) Enqueue(data interface{}) {
+	q.storage[q.tail] = data
 	q.tail++
 	if q.tail >= q.length {
 		q.tail = 0
@@ -36,7 +36,7 @@ func (q *PacketQueue) Enqueue(packet *SimulatedPacket) {
 	}
 }
 
-func (q *PacketQueue) Dequeue() *SimulatedPacket {
+func (q *DataQueue) Dequeue() interface{} {
 	if q.head == q.tail {
 		panic("record is empty")
 	}
@@ -48,7 +48,7 @@ func (q *PacketQueue) Dequeue() *SimulatedPacket {
 	return result
 }
 
-func (q *PacketQueue) At(index int) *SimulatedPacket {
+func (q *DataQueue) At(index int) interface{} {
 	if index >= q.Length() {
 		panic("index is overflow")
 	}
@@ -60,7 +60,7 @@ func (q *PacketQueue) At(index int) *SimulatedPacket {
 }
 
 // Do iterate the queue with the given action
-func (q *PacketQueue) Do(action func(simulatedPacket *SimulatedPacket)) {
+func (q *DataQueue) Do(action func(interface{})) {
 	for i := q.head; i != q.tail; i++ {
 		if i >= q.length {
 			i = -1
