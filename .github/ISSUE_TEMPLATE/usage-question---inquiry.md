@@ -1,6 +1,6 @@
 ---
-name: Usage Question / Inquiry
-about: Ask a question about this repository's usage
+name: Usage question / inquiry
+about: Ask a question about this project's usage
 title: ''
 labels: question
 assignees: ''
