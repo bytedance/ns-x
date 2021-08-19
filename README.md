@@ -196,8 +196,8 @@ func main() {
 	network, nodes := helper.
 		Chain().
 		Node(n1).
-		Node(node.NewChannelNode("", callback, math.NewRandomLoss(0.1, random))).
-		Node(node.NewRestrictNode("", nil, 1.0, 1024.0, 8192, 20)).
+		Node(node.NewChannelNode("", callback, math.NewRandomLoss(0.3, random))).
+		Node(node.NewRestrictNode("", nil, 1.0, 1024.0, 4096, 5)).
 		Node(node.NewEndpointNode("endpoint", nil)).
 		Chain().
 		Node(node.NewEndpointNode("entry2", nil)).
