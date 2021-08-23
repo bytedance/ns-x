@@ -13,25 +13,29 @@ type Builder interface {
 	Chain() Builder
 	// Node connect the given node to the end of current chain, and name it if given node's name is not empty
 	Node(node base.Node) Builder
-	// Group connect the given nodes to the end of current chain one by one in order
-	Group(nodes ...base.Node) Builder
+	// Group insert a group to current chain, which means end of current chain will be connected to in node, and the end of current chain will be set to out node
+	Group(in, out base.Node) Builder
 	// NodeWithName same to Node, but use the given name instead of node's name
 	NodeWithName(name string, node base.Node) Builder
 	// GroupWithName same to Group, but name the whole group with the given name
-	GroupWithName(name string, nodes ...base.Node) Builder
-	// NodeByName find the node with the given name, and then connect it to the end of the chain
-	NodeByName(name string) Builder
-	// GroupByName find the group with the given name, and then perform the NodeGroup operation on it
-	GroupByName(name string) Builder
+	GroupWithName(name string, in, out base.Node) Builder
+	// NodeOfName find the node with the given name, and then connect it to the end of the chain
+	NodeOfName(name string) Builder
+	// GroupOfName find the group with the given name, and then perform the Group operation on it
+	GroupOfName(name string) Builder
 	// Build actually connect the nodes with relation described before, any connection outside the builder will be overwritten
 	// parameters are used to configure the network, return the built network, and a map from name to named nodes
-	Build(loopLimit, emptySpinLimit, splitThreshold int) (*Network, map[string]base.Node)
+	Build() (*Network, map[string]base.Node)
+}
+
+type group struct {
+	in, out base.Node
 }
 
 type builder struct {
 	nodes       map[base.Node]int
 	names       map[string]base.Node
-	groups      map[string][]base.Node
+	groups      map[string]*group
 	current     base.Node
 	connections map[base.Node]map[base.Node]interface{}
 }
@@ -40,7 +44,7 @@ func NewBuilder() Builder {
 	return &builder{
 		nodes:       map[base.Node]int{},
 		names:       map[string]base.Node{},
-		groups:      map[string][]base.Node{},
+		groups:      map[string]*group{},
 		connections: map[base.Node]map[base.Node]interface{}{},
 	}
 }
@@ -73,22 +77,23 @@ func (b *builder) NodeWithName(name string, node base.Node) Builder {
 	return b
 }
 
-func (b *builder) Group(nodes ...base.Node) Builder {
-	return b.GroupWithName("", nodes...)
+func (b *builder) Group(in, out base.Node) Builder {
+	return b.GroupWithName("", in, out)
 }
 
-func (b *builder) GroupWithName(name string, nodes ...base.Node) Builder {
+func (b *builder) GroupWithName(name string, in, out base.Node) Builder {
+	if in == nil || out == nil {
+		panic("in and out node of any group cannot be nil")
+	}
 	if name != "" {
-		b.groups[name] = nodes
+		b.groups[name] = &group{in: in, out: out}
 	}
-	builder := Builder(b)
-	for _, node := range nodes {
-		builder = builder.Node(node)
-	}
-	return builder
+	b.Node(in)
+	b.current = out
+	return b
 }
 
-func (b *builder) NodeByName(name string) Builder {
+func (b *builder) NodeOfName(name string) Builder {
 	node, ok := b.names[name]
 	if !ok {
 		panic("no node with name: " + name)
@@ -96,15 +101,15 @@ func (b *builder) NodeByName(name string) Builder {
 	return b.Node(node)
 }
 
-func (b *builder) GroupByName(name string) Builder {
+func (b *builder) GroupOfName(name string) Builder {
 	group, ok := b.groups[name]
 	if !ok {
 		panic("no group with name: " + name)
 	}
-	return b.Group(group...)
+	return b.Group(group.in, group.out)
 }
 
-func (b *builder) Build(loopLimit, emptySpinLimit, splitThreshold int) (*Network, map[string]base.Node) {
+func (b *builder) Build() (*Network, map[string]base.Node) {
 	nodes := make([]base.Node, len(b.nodes))
 	println("network summary: ")
 	for node, index := range b.nodes {
