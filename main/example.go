@@ -28,7 +28,7 @@ func main() {
 		Node(node.NewEndpointNode("entry2", nil)).
 		Node(node.NewChannelNode("", callback, math.NewRandomLoss(0.1, random))).
 		NodeByName("endpoint").
-		Build(1, 10000, 10)
+		Build()
 	entry1 := nodes["entry1"].(*node.EndpointNode)
 	entry2 := nodes["entry2"].(*node.EndpointNode)
 	endpoint := nodes["endpoint"].(*node.EndpointNode)

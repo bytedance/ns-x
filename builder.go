@@ -25,7 +25,7 @@ type Builder interface {
 	GroupByName(name string) Builder
 	// Build actually connect the nodes with relation described before, any connection outside the builder will be overwritten
 	// parameters are used to configure the network, return the built network, and a map from name to named nodes
-	Build(loopLimit, emptySpinLimit, splitThreshold int) (*Network, map[string]base.Node)
+	Build() (*Network, map[string]base.Node)
 }
 
 type builder struct {
@@ -104,7 +104,7 @@ func (b *builder) GroupByName(name string) Builder {
 	return b.Group(group...)
 }
 
-func (b *builder) Build(loopLimit, emptySpinLimit, splitThreshold int) (*Network, map[string]base.Node) {
+func (b *builder) Build() (*Network, map[string]base.Node) {
 	nodes := make([]base.Node, len(b.nodes))
 	println("network summary: ")
 	for node, index := range b.nodes {
