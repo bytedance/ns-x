@@ -19,10 +19,10 @@ type Builder interface {
 	NodeWithName(name string, node base.Node) Builder
 	// GroupWithName same to Group, but name the whole group with the given name
 	GroupWithName(name string, in, out base.Node) Builder
-	// NodeByName find the node with the given name, and then connect it to the end of the chain
-	NodeByName(name string) Builder
-	// GroupByName find the group with the given name, and then perform the Group operation on it
-	GroupByName(name string) Builder
+	// NodeOfName find the node with the given name, and then connect it to the end of the chain
+	NodeOfName(name string) Builder
+	// GroupOfName find the group with the given name, and then perform the Group operation on it
+	GroupOfName(name string) Builder
 	// Build actually connect the nodes with relation described before, any connection outside the builder will be overwritten
 	// parameters are used to configure the network, return the built network, and a map from name to named nodes
 	Build() (*Network, map[string]base.Node)
@@ -93,7 +93,7 @@ func (b *builder) GroupWithName(name string, in, out base.Node) Builder {
 	return b
 }
 
-func (b *builder) NodeByName(name string) Builder {
+func (b *builder) NodeOfName(name string) Builder {
 	node, ok := b.names[name]
 	if !ok {
 		panic("no node with name: " + name)
@@ -101,7 +101,7 @@ func (b *builder) NodeByName(name string) Builder {
 	return b.Node(node)
 }
 
-func (b *builder) GroupByName(name string) Builder {
+func (b *builder) GroupOfName(name string) Builder {
 	group, ok := b.groups[name]
 	if !ok {
 		panic("no group with name: " + name)
