@@ -1,4 +1,4 @@
-module github.com/bytedance/ns-x
+module github.com/bytedance/ns-x/v2
 
 go 1.16
 
