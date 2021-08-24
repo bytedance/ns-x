@@ -1,7 +1,7 @@
 package ns_x
 
 import (
-	"ns-x/base"
+	"github.com/bytedance/ns-x/base"
 	"reflect"
 	"strconv"
 	"strings"

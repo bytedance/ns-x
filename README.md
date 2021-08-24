@@ -186,9 +186,9 @@ import (
 	"go.uber.org/atomic"
 	"math/rand"
 	"ns-x"
-	"ns-x/base"
-	"ns-x/math"
-	"ns-x/node"
+	"github.com/bytedance/ns-x/base"
+	"github.com/bytedance/ns-x/math"
+	"github.com/bytedance/ns-x/node"
 	"time"
 )
 

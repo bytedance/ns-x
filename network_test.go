@@ -2,8 +2,8 @@ package ns_x
 
 import (
 	"container/heap"
+	"github.com/bytedance/ns-x/base"
 	"math/rand"
-	"ns-x/base"
 	"testing"
 	"time"
 )

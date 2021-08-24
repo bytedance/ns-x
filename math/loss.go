@@ -1,9 +1,9 @@
 package math
 
 import (
+	"github.com/bytedance/ns-x/base"
+	"github.com/bytedance/ns-x/node"
 	"math/rand"
-	"ns-x/base"
-	node2 "ns-x/node"
 	"time"
 )
 
@@ -17,7 +17,7 @@ type NoneLoss struct {
 
 var _ Loss = &NoneLoss{}
 
-func NewNoneLoss() node2.PacketHandler {
+func NewNoneLoss() node.PacketHandler {
 	loss := &NoneLoss{}
 	return loss.PacketHandler
 }
@@ -38,7 +38,7 @@ type RandomLoss struct {
 
 var _ Loss = &RandomLoss{}
 
-func NewRandomLoss(possibility float64, random *rand.Rand) node2.PacketHandler {
+func NewRandomLoss(possibility float64, random *rand.Rand) node.PacketHandler {
 	loss := &RandomLoss{
 		possibility: possibility,
 		random:      random,
@@ -63,7 +63,7 @@ type GilbertLoss struct {
 
 var _ Loss = &GilbertLoss{}
 
-func NewGilbertLoss(s1Loss, s1Transit, s2Loss, s2Transit float64) node2.PacketHandler {
+func NewGilbertLoss(s1Loss, s1Transit, s2Loss, s2Transit float64) node.PacketHandler {
 	loss := &GilbertLoss{
 		s1Loss:       s1Loss,
 		s1Transit:    s1Transit,

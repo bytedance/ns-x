@@ -1,9 +1,9 @@
 package math
 
 import (
+	"github.com/bytedance/ns-x/base"
+	"github.com/bytedance/ns-x/node"
 	"math/rand"
-	"ns-x/base"
-	node2 "ns-x/node"
 	"time"
 )
 
@@ -18,7 +18,7 @@ type NoneReorder struct {
 
 var _ Reorder = &NoneReorder{}
 
-func NewNoneReorder() node2.PacketHandler {
+func NewNoneReorder() node.PacketHandler {
 	reorder := &NoneReorder{}
 	return reorder.PacketHandler
 }
@@ -43,7 +43,7 @@ type NormalReorder struct {
 
 var _ Reorder = &NormalReorder{}
 
-func NewNormalReorder(delay time.Duration, possibility, correlation float64, random *rand.Rand) node2.PacketHandler {
+func NewNormalReorder(delay time.Duration, possibility, correlation float64, random *rand.Rand) node.PacketHandler {
 	reorder := &NormalReorder{
 		delay:       delay,
 		possibility: possibility,
@@ -87,7 +87,7 @@ type GapReorder struct {
 var _ Reorder = &GapReorder{}
 
 func NewGapReorder(delay time.Duration, possibility,
-	correlation float64, gap int, random *rand.Rand) node2.PacketHandler {
+	correlation float64, gap int, random *rand.Rand) node.PacketHandler {
 	reorder := &GapReorder{
 		delay:       delay,
 		possibility: possibility,
