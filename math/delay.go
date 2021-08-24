@@ -1,9 +1,9 @@
 package math
 
 import (
+	"github.com/bytedance/ns-x/base"
+	"github.com/bytedance/ns-x/node"
 	"math/rand"
-	"ns-x/base"
-	"ns-x/node"
 	"time"
 )
 

@@ -1,12 +1,12 @@
 package main
 
 import (
+	"github.com/bytedance/ns-x"
+	"github.com/bytedance/ns-x/base"
+	"github.com/bytedance/ns-x/math"
+	"github.com/bytedance/ns-x/node"
 	"go.uber.org/atomic"
 	"math/rand"
-	"ns-x"
-	"ns-x/base"
-	"ns-x/math"
-	"ns-x/node"
 	"time"
 )
 
