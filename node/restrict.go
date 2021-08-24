@@ -1,7 +1,7 @@
 package node
 
 import (
-	"github.com/bytedance/ns-x/base"
+	"github.com/bytedance/ns-x/v2/base"
 	"math"
 	"time"
 )

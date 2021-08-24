@@ -2,7 +2,7 @@ package ns_x
 
 import (
 	"container/heap"
-	"github.com/bytedance/ns-x/base"
+	"github.com/bytedance/ns-x/v2/base"
 	"go.uber.org/atomic"
 	"runtime"
 	"sync"
