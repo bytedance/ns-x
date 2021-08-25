@@ -5,6 +5,7 @@ import (
 	"github.com/bytedance/ns-x/v2/base"
 	"github.com/bytedance/ns-x/v2/math"
 	"github.com/bytedance/ns-x/v2/node"
+	"github.com/bytedance/ns-x/v2/tick"
 	"go.uber.org/atomic"
 	"math/rand"
 	"time"
@@ -28,7 +29,7 @@ func main() {
 		Node(node.NewEndpointNode("entry2", nil)).
 		Node(node.NewChannelNode("", callback, math.NewRandomLoss(0.1, random))).
 		NodeOfName("endpoint").
-		Build()
+		Build(tick.NewStepClock(time.Now(), time.Second))
 	entry1 := nodes["entry1"].(*node.EndpointNode)
 	entry2 := nodes["entry2"].(*node.EndpointNode)
 	endpoint := nodes["endpoint"].(*node.EndpointNode)
@@ -56,6 +57,6 @@ func main() {
 	events = append(events, event)
 	network.Start(events...)
 	defer network.Stop()
-	time.Sleep(time.Second * 30)
+	time.Sleep(time.Second)
 	cancel()
 }

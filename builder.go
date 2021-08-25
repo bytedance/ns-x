@@ -2,6 +2,7 @@ package ns_x
 
 import (
 	"github.com/bytedance/ns-x/v2/base"
+	"github.com/bytedance/ns-x/v2/tick"
 	"reflect"
 	"strconv"
 	"strings"
@@ -25,7 +26,7 @@ type Builder interface {
 	GroupOfName(name string) Builder
 	// Build actually connect the nodes with relation described before, any connection outside the builder will be overwritten
 	// parameters are used to configure the network, return the built network, and a map from name to named nodes
-	Build() (*Network, map[string]base.Node)
+	Build(clock tick.Clock) (*Network, map[string]base.Node)
 }
 
 type group struct {
@@ -109,7 +110,7 @@ func (b *builder) GroupOfName(name string) Builder {
 	return b.Group(group.in, group.out)
 }
 
-func (b *builder) Build() (*Network, map[string]base.Node) {
+func (b *builder) Build(clock tick.Clock) (*Network, map[string]base.Node) {
 	nodes := make([]base.Node, len(b.nodes))
 	println("network summary: ")
 	for node, index := range b.nodes {
@@ -122,7 +123,7 @@ func (b *builder) Build() (*Network, map[string]base.Node) {
 		println(b.toString(node, index))
 	}
 	println()
-	return NewNetwork(nodes), b.names
+	return NewNetwork(nodes, clock), b.names
 }
 
 func (b *builder) toString(node base.Node, index int) string {

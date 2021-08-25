@@ -3,6 +3,7 @@ package ns_x
 import (
 	"container/heap"
 	"github.com/bytedance/ns-x/v2/base"
+	"github.com/bytedance/ns-x/v2/tick"
 	"math/rand"
 	"testing"
 	"time"
@@ -13,7 +14,7 @@ func nop(time.Time) []base.Event {
 }
 
 func BenchmarkEventLoop(b *testing.B) {
-	network := NewNetwork([]base.Node{})
+	network := NewNetwork([]base.Node{}, tick.NewRealClock())
 	events := make([]base.Event, b.N)
 	now := time.Now()
 	for i := 0; i < b.N; i++ {

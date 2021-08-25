@@ -3,24 +3,26 @@ package ns_x
 import (
 	"container/heap"
 	"github.com/bytedance/ns-x/v2/base"
+	"github.com/bytedance/ns-x/v2/tick"
 	"go.uber.org/atomic"
 	"runtime"
 	"sync"
-	"time"
 )
 
 // Network Indicates a simulated network, which contains some simulated nodes
 type Network struct {
 	nodes   []base.Node
+	clock   tick.Clock
 	buffer  *base.EventBuffer
 	running *atomic.Bool
 	wg      *sync.WaitGroup
 }
 
 // NewNetwork creates a network with the given nodes, connections of nodes should be already established.
-func NewNetwork(nodes []base.Node) *Network {
+func NewNetwork(nodes []base.Node, clock tick.Clock) *Network {
 	return &Network{
 		nodes:   nodes,
+		clock:   clock,
 		buffer:  base.NewEventBuffer(),
 		running: atomic.NewBool(false),
 		wg:      &sync.WaitGroup{},
@@ -36,7 +38,7 @@ func (n *Network) fetch(packetHeap heap.Interface) {
 
 // drain the given heap if possible, and process the Events available
 func (n *Network) drain(packetHeap *base.EventHeap) {
-	now := time.Now()
+	now := n.clock()
 	for !packetHeap.IsEmpty() {
 		p := packetHeap.Peek()
 		t := p.Time()
