@@ -1,6 +1,6 @@
 package base
 
-// EventHeap ...
+// EventHeap is used to sort events according to the time of events
 type EventHeap struct {
 	Storage []Event
 }
@@ -10,7 +10,9 @@ func (q *EventHeap) IsEmpty() bool {
 }
 
 func (q *EventHeap) Less(i, j int) bool {
-	return q.Storage[i].Time().Before(q.Storage[j].Time())
+	ti := q.Storage[i].Time()
+	tj := q.Storage[j].Time()
+	return ti.Before(tj)
 }
 
 func (q *EventHeap) Len() int {

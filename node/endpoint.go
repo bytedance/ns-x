@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-// EndpointNode is a node to receive Events, Events reached an endpoint will no longer be transmitted
+// EndpointNode is a node to send and receive packets
 type EndpointNode struct {
 	*BasicNode
 	callback React

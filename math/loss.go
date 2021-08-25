@@ -7,6 +7,7 @@ import (
 	"time"
 )
 
+// Loss in the network
 type Loss interface {
 	Loss() bool // the packet Loss if true
 }

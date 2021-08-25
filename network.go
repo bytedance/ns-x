@@ -36,7 +36,7 @@ func (n *Network) fetch(packetHeap heap.Interface) {
 	})
 }
 
-// drain the given heap if possible, and process the Events available
+// drain the given heap if possible, and process the events available
 func (n *Network) drain(packetHeap *base.EventHeap) {
 	now := n.clock()
 	for !packetHeap.IsEmpty() {
@@ -53,6 +53,7 @@ func (n *Network) drain(packetHeap *base.EventHeap) {
 	}
 }
 
+// block until clear the given heap
 func (n *Network) clear(packetHeap *base.EventHeap) {
 	for !packetHeap.IsEmpty() {
 		n.drain(packetHeap)

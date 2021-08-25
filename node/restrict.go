@@ -7,9 +7,8 @@ import (
 )
 
 // RestrictNode simulate a node with limited ability
-// Once Events through a RestrictNode reaches the limit(in bps or pps), the later Events will be put in a events
-// Once the events overflow, later Events will be discarded
-// The events limit will not be accurate, usually a little lower than specified, since it takes time(usually less than microseconds) to send Events
+// Once packets through a RestrictNode reaches the limit(in bps or pps), the later packets will be put in a buffer
+// Once the buffer overflow, later packets will be discarded
 type RestrictNode struct {
 	*BasicNode
 	ppsLimit, bpsLimit                float64
@@ -20,8 +19,8 @@ type RestrictNode struct {
 
 // NewRestrictNode create a new restrict with the given parameter
 // next, recordSize, callback the same as BasicNode
-// ppsLimit, bpsLimit: the limit of Events per second/bytes per second
-// bufferSizeLimit, bufferCountLimit: the limit of waiting Events, in bytes/Events
+// ppsLimit, bpsLimit: the limit of packets per second/bytes per second
+// bufferSizeLimit, bufferCountLimit: the limit of waiting packets, in bytes/packets
 func NewRestrictNode(name string, onEmitCallback base.TransferCallback, ppsLimit, bpsLimit float64, bufferSizeLimit, bufferCountLimit int64) *RestrictNode {
 	return &RestrictNode{
 		BasicNode:        NewBasicNode(name, onEmitCallback),
