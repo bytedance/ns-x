@@ -8,9 +8,12 @@ import (
 	"time"
 )
 
-func TestHeap(t *testing.T) {
+const TestBucketSize = time.Second
+const TestBucketsLimit = 128
+
+func TestEventQueue(t *testing.T) {
 	now := time.Now()
-	eventQueue := NewEventQueue(time.Second)
+	eventQueue := NewEventQueue(TestBucketSize, TestBucketsLimit)
 	count := 50
 	for i := 0; i < count; i++ {
 		eventQueue.Enqueue(NewFixedEvent(func(t time.Time) []Event {
@@ -27,9 +30,9 @@ func TestHeap(t *testing.T) {
 	}
 }
 
-func BenchmarkHeap(b *testing.B) {
+func BenchmarkEventQueue(b *testing.B) {
 	now := time.Now()
-	eventQueue := NewEventQueue(time.Second)
+	eventQueue := NewEventQueue(TestBucketSize, TestBucketsLimit)
 	for i := 0; i < b.N; i++ {
 		eventQueue.Enqueue(NewFixedEvent(func(t time.Time) []Event {
 			return nil
@@ -40,9 +43,9 @@ func BenchmarkHeap(b *testing.B) {
 	}
 }
 
-func BenchmarkPush(b *testing.B) {
+func BenchmarkEnqueue(b *testing.B) {
 	now := time.Now()
-	eventQueue := NewEventQueue(time.Second)
+	eventQueue := NewEventQueue(TestBucketSize, TestBucketsLimit)
 	for i := 0; i < b.N; i++ {
 		eventQueue.Enqueue(NewFixedEvent(func(t time.Time) []Event {
 			return nil
@@ -50,9 +53,9 @@ func BenchmarkPush(b *testing.B) {
 	}
 }
 
-func BenchmarkPop(b *testing.B) {
+func BenchmarkDequeue(b *testing.B) {
 	now := time.Now()
-	eventQueue := NewEventQueue(time.Second)
+	eventQueue := NewEventQueue(TestBucketSize, TestBucketsLimit)
 	for i := 0; i < b.N; i++ {
 		eventQueue.Enqueue(NewFixedEvent(func(t time.Time) []Event {
 			return nil
@@ -64,34 +67,13 @@ func BenchmarkPop(b *testing.B) {
 	}
 }
 
-func BenchmarkPushAndPop(b *testing.B) {
+func BenchmarkEnqueueAndDequeue(b *testing.B) {
 	now := time.Now()
-	eventQueue := NewEventQueue(time.Second)
+	eventQueue := NewEventQueue(TestBucketSize, TestBucketsLimit)
 	for i := 0; i < b.N; i++ {
 		eventQueue.Enqueue(NewFixedEvent(func(t time.Time) []Event {
 			return nil
 		}, now.Add(time.Duration(rand.Int()%20)*time.Second)))
 		_ = eventQueue.Dequeue()
-	}
-}
-
-func BenchmarkLimitedHeap(b *testing.B) {
-	now := time.Now()
-	N := b.N
-	limit := 100
-	eventQueue := NewEventQueue(time.Second)
-	for N > 0 {
-		if N < limit {
-			limit = N
-		}
-		for i := 0; i < limit; i++ {
-			eventQueue.Enqueue(NewFixedEvent(func(t time.Time) []Event {
-				return nil
-			}, now.Add(time.Duration(rand.Int()%20)*time.Second)))
-		}
-		for !eventQueue.IsEmpty() {
-			_ = eventQueue.Dequeue()
-		}
-		N -= limit
 	}
 }

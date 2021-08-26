@@ -6,7 +6,6 @@ import (
 	"go.uber.org/atomic"
 	"runtime"
 	"sync"
-	"time"
 )
 
 // Network Indicates a simulated network, which contains some simulated nodes
@@ -76,7 +75,7 @@ func (n *Network) eventLoop(eventQueue *base.EventQueue) {
 }
 
 // Start the network to enable event process
-func (n *Network) Start(events ...base.Event) {
+func (n *Network) Start(config Config) {
 	if n.running.Load() {
 		return
 	}
@@ -84,8 +83,8 @@ func (n *Network) Start(events ...base.Event) {
 	for _, node := range n.nodes {
 		node.Check()
 	}
-	eventQueue := base.NewEventQueue(time.Second)
-	for _, event := range events {
+	eventQueue := base.NewEventQueue(config.BucketSize, config.MaxBuckets)
+	for _, event := range config.InitialEvents {
 		eventQueue.Enqueue(event)
 	}
 	go n.eventLoop(eventQueue)
