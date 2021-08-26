@@ -197,7 +197,7 @@ func main() {
 	source := rand.NewSource(0)
 	random := rand.New(source)
 	helper := ns_x.NewBuilder()
-	callback := func(packet base.Packet, target base.Node, now time.Time) {
+	callback := func(packet base.Packet, source, target base.Node, now time.Time) {
 		println("emit packet")
 	}
 	n1 := node.NewEndpointNode("entry1", nil)
@@ -227,17 +227,21 @@ func main() {
 	total := 20
 	events := make([]base.Event, 0, total*2)
 	for i := 0; i < 20; i++ {
-		events = append(events, entry1.Send(base.RawPacket([]byte{0x01, 0x02})))
+		events = append(events, entry1.Send(base.RawPacket([]byte{0x01, 0x02}), time.Now()))
 	}
 	for i := 0; i < 20; i++ {
-		events = append(events, entry2.Send(base.RawPacket([]byte{0x01, 0x02})))
+		events = append(events, entry2.Send(base.RawPacket([]byte{0x01, 0x02}), time.Now()))
 	}
 	event, cancel := base.NewPeriodicEvent(func(t time.Time) []base.Event {
 		println("current time", t.String())
 		return nil
 	}, time.Second, time.Now())
 	events = append(events, event)
-	network.Start(events...)
+	network.Start(ns_x.Config{
+		BucketSize:    time.Second,
+		MaxBuckets:    128,
+		InitialEvents: events,
+	})
 	defer network.Stop()
 	time.Sleep(time.Second)
 	cancel()
