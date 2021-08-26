@@ -26,9 +26,9 @@ func (n *EndpointNode) Transfer(packet base.Packet, now time.Time) []base.Event 
 	return nil
 }
 
-func (n EndpointNode) SendAt(packet base.Packet, t time.Time) base.Event {
+func (n *EndpointNode) SendAt(packet base.Packet, t time.Time) base.Event {
 	return base.NewFixedEvent(func(t time.Time) []base.Event {
-		return n.ActualTransfer(packet, n.next[0], t)
+		return n.ActualTransfer(packet, n, n.next[0], t)
 	}, t)
 }
 

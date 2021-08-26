@@ -12,4 +12,4 @@ type Node interface {
 }
 
 // TransferCallback called when a packet is transferred
-type TransferCallback func(packet Packet, target Node, now time.Time)
+type TransferCallback func(packet Packet, source, target Node, now time.Time)

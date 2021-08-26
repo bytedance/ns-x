@@ -56,7 +56,7 @@ func (n *RestrictNode) Transfer(packet base.Packet, now time.Time) []base.Event 
 				n.bufferSize -= int64(packet.Size())
 				n.bufferCount--
 			}
-			return n.ActualTransfer(packet, n.next[0], t)
+			return n.ActualTransfer(packet, n, n.next[0], t)
 		}, t),
 	)
 }

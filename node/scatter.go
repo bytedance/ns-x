@@ -21,12 +21,12 @@ func NewScatterNode(name string, selector RouteSelector, callback base.TransferC
 	}
 }
 
-func (s *ScatterNode) Transfer(packet base.Packet, now time.Time) []base.Event {
-	path := s.selector(packet, s.next)
+func (n *ScatterNode) Transfer(packet base.Packet, now time.Time) []base.Event {
+	path := n.selector(packet, n.next)
 	if path != nil {
 		return base.Aggregate(
 			base.NewFixedEvent(func(t time.Time) []base.Event {
-				return s.ActualTransfer(packet, path, t)
+				return n.ActualTransfer(packet, n, path, t)
 			}, now),
 		)
 	}

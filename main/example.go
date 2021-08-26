@@ -15,7 +15,7 @@ func main() {
 	source := rand.NewSource(0)
 	random := rand.New(source)
 	helper := ns_x.NewBuilder()
-	callback := func(packet base.Packet, target base.Node, now time.Time) {
+	callback := func(packet base.Packet, source, target base.Node, now time.Time) {
 		println("emit packet")
 	}
 	n1 := node.NewEndpointNode("entry1", nil)

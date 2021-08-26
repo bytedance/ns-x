@@ -22,7 +22,7 @@ func (n *BroadcastNode) Transfer(packet base.Packet, now time.Time) []base.Event
 	events := make([]base.Event, len(n.next))
 	for index, node := range n.next {
 		events[index] = base.NewFixedEvent(func(t time.Time) []base.Event {
-			return n.ActualTransfer(packet, node, t)
+			return n.ActualTransfer(packet, n, node, t)
 		}, now)
 	}
 	return events
