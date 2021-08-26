@@ -42,7 +42,7 @@ func BenchmarkHeap(b *testing.B) {
 func BenchmarkSinglePush(b *testing.B) {
 	eventHeap := &EventHeap{}
 	for i := 0; i < b.N; i++ {
-		eventHeap.Storage = eventHeap.Storage[0:0]
+		eventHeap.storage = eventHeap.storage[0:0]
 		heap.Push(eventHeap, NewFixedEvent(func(t time.Time) []Event {
 			return nil
 		}, time.Unix(rand.Int63(), 0)))

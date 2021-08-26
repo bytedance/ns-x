@@ -2,7 +2,11 @@ package base
 
 // EventHeap is used to sort events according to the time of events
 type EventHeap struct {
-	Storage []Event
+	storage []Event
+}
+
+func NewEventHeap(events ...Event) *EventHeap {
+	return &EventHeap{storage: events}
 }
 
 func (q *EventHeap) IsEmpty() bool {
@@ -10,26 +14,26 @@ func (q *EventHeap) IsEmpty() bool {
 }
 
 func (q *EventHeap) Less(i, j int) bool {
-	ti := q.Storage[i].Time()
-	tj := q.Storage[j].Time()
+	ti := q.storage[i].Time()
+	tj := q.storage[j].Time()
 	return ti.Before(tj)
 }
 
 func (q *EventHeap) Len() int {
-	return len(q.Storage)
+	return len(q.storage)
 }
 
 func (q *EventHeap) Swap(i, j int) {
-	q.Storage[i], q.Storage[j] = q.Storage[j], q.Storage[i]
+	q.storage[i], q.storage[j] = q.storage[j], q.storage[i]
 }
 
 func (q *EventHeap) Push(x interface{}) {
-	q.Storage = append(q.Storage, x.(Event))
+	q.storage = append(q.storage, x.(Event))
 }
 
 func (q *EventHeap) Pop() interface{} {
-	x := q.Storage[q.Len()-1]
-	q.Storage = q.Storage[:q.Len()-1]
+	x := q.storage[q.Len()-1]
+	q.storage = q.storage[:q.Len()-1]
 	return x
 }
 
@@ -37,5 +41,5 @@ func (q *EventHeap) Peek() Event {
 	if q.IsEmpty() {
 		return nil
 	}
-	return q.Storage[0]
+	return q.storage[0]
 }
