@@ -8,6 +8,7 @@ type Queue struct {
 	storage            []interface{}
 }
 
+// NewQueue create a queue with the initial capacity hint
 func NewQueue(length int) *Queue {
 	storage := make([]interface{}, length)
 	for len(storage) < cap(storage) {
@@ -31,10 +32,12 @@ func (q *Queue) expand() {
 	}
 }
 
+// IsEmpty is used to determine whether the queue is empty
 func (q *Queue) IsEmpty() bool {
 	return q.Length() == 0
 }
 
+// Length of the queue
 func (q *Queue) Length() int {
 	result := q.tail - q.head
 	for result < 0 {
@@ -43,6 +46,7 @@ func (q *Queue) Length() int {
 	return result
 }
 
+// Enqueue insert the given element to the end of queue
 func (q *Queue) Enqueue(data interface{}) {
 	q.storage[q.tail] = data
 	q.tail++
@@ -54,6 +58,7 @@ func (q *Queue) Enqueue(data interface{}) {
 	}
 }
 
+// Dequeue remove and return element at the head of the queue, panic if empty
 func (q *Queue) Dequeue() interface{} {
 	if q.head == q.tail {
 		panic("queue is empty")
@@ -67,6 +72,7 @@ func (q *Queue) Dequeue() interface{} {
 	return result
 }
 
+// At return the element of the given index
 func (q *Queue) At(index int) interface{} {
 	if index >= q.Length() {
 		panic("index overflow")
