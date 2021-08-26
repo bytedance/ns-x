@@ -7,6 +7,7 @@ import (
 	"time"
 )
 
+// Delay in the network
 type Delay interface {
 	Delay() time.Duration   // Actual Delay duration (include jitter)
 	Average() time.Duration // Average delay duration

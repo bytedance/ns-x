@@ -1,5 +1,6 @@
 package base
 
+// Packet in the network
 type Packet interface {
 	Size() int
 }

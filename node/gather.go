@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-// GatherNode ...
+// GatherNode transfer packets from multiple sources to a single target
 type GatherNode struct {
 	*BasicNode
 }

@@ -34,7 +34,6 @@ func (n *BasicNode) ActualTransfer(packet base.Packet, target base.Node, now tim
 
 func (n *BasicNode) Transfer(base.Packet, time.Time) []base.Event {
 	panic("not implemented")
-	return nil
 }
 
 func (n *BasicNode) GetNext() []base.Node {
