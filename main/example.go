@@ -55,7 +55,11 @@ func main() {
 		return nil
 	}, time.Second, time.Now())
 	events = append(events, event)
-	network.Start(events...)
+	network.Start(ns_x.Config{
+		BucketSize:    time.Second,
+		MaxBuckets:    128,
+		InitialEvents: events,
+	})
 	defer network.Stop()
 	time.Sleep(time.Second)
 	cancel()

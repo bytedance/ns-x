@@ -11,15 +11,19 @@ type EventQueue struct {
 	buckets       *Queue
 	threshold     time.Time
 	bucketSize    time.Duration
+	maxBuckets    int
 	currentBucket *bucket
+	defaultBucket *bucket
 }
 
-func NewEventQueue(bucketSize time.Duration) *EventQueue {
+func NewEventQueue(bucketSize time.Duration, maxBuckets int) *EventQueue {
 	return &EventQueue{
 		total:         0,
 		buckets:       NewQueue(0),
 		bucketSize:    bucketSize,
+		maxBuckets:    maxBuckets,
 		currentBucket: &bucket{},
+		defaultBucket: &bucket{},
 	}
 }
 
@@ -31,10 +35,14 @@ func (q *EventQueue) Enqueue(event Event) {
 	b := q.currentBucket
 	if t.After(q.threshold) {
 		index := int(t.Sub(q.threshold) / q.bucketSize)
-		for index >= q.buckets.Length() {
-			q.buckets.Enqueue(&bucket{})
+		if index >= q.maxBuckets {
+			b = q.defaultBucket
+		} else {
+			for index >= q.buckets.Length() {
+				q.buckets.Enqueue(&bucket{})
+			}
+			b = q.buckets.At(index).(*bucket)
 		}
-		b = q.buckets.At(index).(*bucket)
 	}
 	heap.Push(b, event)
 	q.total++
@@ -52,6 +60,16 @@ func (q *EventQueue) Dequeue() Event {
 		}
 		q.currentBucket = q.buckets.Dequeue().(*bucket)
 		q.threshold = q.threshold.Add(q.bucketSize)
+	}
+	t := q.threshold.Add(q.bucketSize * time.Duration(q.maxBuckets))
+	for !q.defaultBucket.IsEmpty() {
+		e := q.defaultBucket.Peek()
+		if e.Time().After(t) {
+			break
+		}
+		heap.Pop(q.defaultBucket)
+		q.total--
+		q.Enqueue(e)
 	}
 	return event
 }
