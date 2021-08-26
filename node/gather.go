@@ -20,7 +20,7 @@ func (n *GatherNode) Transfer(packet base.Packet, now time.Time) []base.Event {
 	}
 	return base.Aggregate(
 		base.NewFixedEvent(func(t time.Time) []base.Event {
-			return n.ActualTransfer(packet, n.next[0], t)
+			return n.ActualTransfer(packet, n, n.next[0], t)
 		}, now),
 	)
 }

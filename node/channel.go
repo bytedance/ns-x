@@ -47,7 +47,7 @@ func (n *ChannelNode) Transfer(packet base.Packet, now time.Time) []base.Event {
 	if !loss {
 		return base.Aggregate(
 			base.NewDelayedEvent(func(t time.Time) []base.Event {
-				return n.ActualTransfer(packet, n.next[0], t)
+				return n.ActualTransfer(packet, n, n.next[0], t)
 			}, delay, now),
 		)
 	}
