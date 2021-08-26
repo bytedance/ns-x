@@ -10,7 +10,7 @@ type Queue struct {
 
 // NewQueue create a queue with the initial capacity hint
 func NewQueue(length int) *Queue {
-	storage := make([]interface{}, length)
+	storage := make([]interface{}, length+1)
 	for len(storage) < cap(storage) {
 		storage = append(storage, nil)
 	}

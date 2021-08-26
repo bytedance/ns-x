@@ -45,10 +45,10 @@ func main() {
 	total := 20
 	events := make([]base.Event, 0, total*2)
 	for i := 0; i < 20; i++ {
-		events = append(events, entry1.Send(base.RawPacket([]byte{0x01, 0x02})))
+		events = append(events, entry1.Send(base.RawPacket([]byte{0x01, 0x02}), time.Now()))
 	}
 	for i := 0; i < 20; i++ {
-		events = append(events, entry2.Send(base.RawPacket([]byte{0x01, 0x02})))
+		events = append(events, entry2.Send(base.RawPacket([]byte{0x01, 0x02}), time.Now()))
 	}
 	event, cancel := base.NewPeriodicEvent(func(t time.Time) []base.Event {
 		println("current time", t.String())

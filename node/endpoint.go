@@ -26,14 +26,10 @@ func (n *EndpointNode) Transfer(packet base.Packet, now time.Time) []base.Event 
 	return nil
 }
 
-func (n *EndpointNode) SendAt(packet base.Packet, t time.Time) base.Event {
+func (n *EndpointNode) Send(packet base.Packet, t time.Time) base.Event {
 	return base.NewFixedEvent(func(t time.Time) []base.Event {
 		return n.ActualTransfer(packet, n, n.next[0], t)
 	}, t)
-}
-
-func (n *EndpointNode) Send(packet base.Packet) base.Event {
-	return n.SendAt(packet, time.Now())
 }
 
 func (n *EndpointNode) Receive(callback React) {
