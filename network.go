@@ -84,7 +84,7 @@ func (n *Network) Start(events ...base.Event) {
 	for _, node := range n.nodes {
 		node.Check()
 	}
-	h := &base.EventHeap{Storage: events}
+	h := base.NewEventHeap(events...)
 	heap.Init(h)
 	go n.eventLoop(h)
 }

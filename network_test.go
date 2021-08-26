@@ -20,7 +20,7 @@ func BenchmarkEventLoop(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		events[i] = base.NewFixedEvent(nop, now.Add(-time.Duration(rand.Int()%1000)*time.Second))
 	}
-	h := &base.EventHeap{Storage: events}
+	h := &base.EventHeap{}
 	heap.Init(h)
 	b.ResetTimer()
 	network.eventLoop(h)

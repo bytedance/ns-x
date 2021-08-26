@@ -11,6 +11,8 @@ func (p RawPacket) Size() int {
 	return len(p)
 }
 
+// IPPacket is a packet for the ip protocol (ipv4)
+// DO NOT USE NOW, need further support
 type IPPacket struct {
 	Version            byte   // 4bit
 	HeaderSize         byte   // 4 bit
@@ -32,6 +34,8 @@ func (p *IPPacket) Size() int {
 	return int(p.TotalSize)
 }
 
+// UDPPacket is a packet for the udp protocol
+// DO NOT USE NOW, need further support
 type UDPPacket struct {
 	// Size field has no use
 	SourcePort uint16 // 2 byte
