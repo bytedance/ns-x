@@ -1,12 +1,12 @@
 package ns_x
 
 import (
-	"container/heap"
 	"github.com/bytedance/ns-x/v2/base"
 	"github.com/bytedance/ns-x/v2/tick"
 	"go.uber.org/atomic"
 	"runtime"
 	"sync"
+	"time"
 )
 
 // Network Indicates a simulated network, which contains some simulated nodes
@@ -30,48 +30,48 @@ func NewNetwork(nodes []base.Node, clock tick.Clock) *Network {
 }
 
 // fetch events from nodes in the network, and put them into given heap
-func (n *Network) fetch(packetHeap heap.Interface) {
-	n.buffer.Reduce(func(packet base.Event) {
-		heap.Push(packetHeap, packet)
+func (n *Network) fetch(eventQueue *base.EventQueue) {
+	n.buffer.Reduce(func(event base.Event) {
+		eventQueue.Enqueue(event)
 	})
 }
 
 // drain the given heap if possible, and process the events available
-func (n *Network) drain(packetHeap *base.EventHeap) {
+func (n *Network) drain(eventQueue *base.EventQueue) {
 	now := n.clock()
-	for !packetHeap.IsEmpty() {
-		p := packetHeap.Peek()
+	for !eventQueue.IsEmpty() {
+		p := eventQueue.Peek()
 		t := p.Time()
 		if t.After(now) {
 			break
 		}
 		events := p.Action()(t)
-		heap.Pop(packetHeap)
+		eventQueue.Dequeue()
 		for _, event := range events {
-			heap.Push(packetHeap, event)
+			eventQueue.Enqueue(event)
 		}
 	}
 }
 
 // block until clear the given heap
-func (n *Network) clear(packetHeap *base.EventHeap) {
-	for !packetHeap.IsEmpty() {
-		n.drain(packetHeap)
+func (n *Network) clear(eventQueue *base.EventQueue) {
+	for !eventQueue.IsEmpty() {
+		n.drain(eventQueue)
 	}
 }
 
 // eventLoop Main polling loop of network
-func (n *Network) eventLoop(packetHeap *base.EventHeap) {
+func (n *Network) eventLoop(eventQueue *base.EventQueue) {
 	println("network main loop start")
 	runtime.LockOSThread()
 	defer runtime.UnlockOSThread()
 	n.wg.Add(1)
 	defer n.wg.Done()
 	for n.running.Load() {
-		n.fetch(packetHeap)
-		n.drain(packetHeap)
+		n.fetch(eventQueue)
+		n.drain(eventQueue)
 	}
-	n.clear(packetHeap)
+	n.clear(eventQueue)
 	println("network main loop end")
 }
 
@@ -84,9 +84,11 @@ func (n *Network) Start(events ...base.Event) {
 	for _, node := range n.nodes {
 		node.Check()
 	}
-	h := base.NewEventHeap(events...)
-	heap.Init(h)
-	go n.eventLoop(h)
+	eventQueue := base.NewEventQueue(time.Second)
+	for _, event := range events {
+		eventQueue.Enqueue(event)
+	}
+	go n.eventLoop(eventQueue)
 }
 
 // Stop the network, release resources
