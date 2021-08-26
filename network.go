@@ -97,11 +97,6 @@ func (n *Network) Stop() {
 	n.wg.Wait()
 }
 
-// Event insert the given event
-func (n *Network) Event(events ...base.Event) {
-	n.buffer.Insert(events...)
-}
-
 // Nodes return all nodes managed by the network
 func (n *Network) Nodes() []base.Node {
 	return n.nodes
