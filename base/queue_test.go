@@ -15,7 +15,7 @@ func TestQueue(t *testing.T) {
 		ring.Enqueue(data[i])
 	}
 	assert.Equal(t, length, ring.Length())
-	for ring.Length() > 0 {
+	for !ring.IsEmpty() {
 		assert.Equal(t, data[it], ring.Dequeue())
 		it++
 	}
@@ -33,7 +33,7 @@ func TestQueueOverflow(t *testing.T) {
 	}
 	assert.Equal(t, length, ring.Length())
 	it := 0
-	for ring.Length() > 0 {
+	for !ring.IsEmpty() {
 		assert.Equal(t, data[it], ring.Dequeue())
 		it++
 	}
