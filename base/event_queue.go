@@ -35,7 +35,7 @@ func (q *EventQueue) Enqueue(event Event) {
 	b := q.currentBucket
 	if t.After(q.threshold) {
 		index := int(t.Sub(q.threshold) / q.bucketSize)
-		if index >= q.maxBuckets {
+		if index > q.maxBuckets {
 			b = q.defaultBucket
 		} else {
 			for index >= q.buckets.Length() {
