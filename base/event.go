@@ -18,6 +18,7 @@ type event struct {
 	action Action
 }
 
+// Action is what to do of an event, time of the event is passed in, return following events of this event
 type Action func(time.Time) []Event
 
 func (e *event) Time() time.Time {
@@ -33,12 +34,12 @@ func Aggregate(events ...Event) []Event {
 	return events
 }
 
-// NewDelayedEvent create a event with delay
+// NewDelayedEvent create an event with delay
 func NewDelayedEvent(action Action, delay time.Duration, now time.Time) Event {
 	return NewFixedEvent(action, now.Add(delay))
 }
 
-// NewFixedEvent create a event at the time point
+// NewFixedEvent create an event at the time point
 func NewFixedEvent(action Action, time time.Time) Event {
 	return &event{time: time, action: action}
 }

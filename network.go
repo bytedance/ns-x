@@ -71,7 +71,7 @@ func (n *Network) eventLoop(eventQueue *base.EventQueue) {
 		n.drain(eventQueue)
 	}
 	n.clear(eventQueue)
-	println("network main loop end")
+	println("network main loop end at", n.clock().String())
 }
 
 // Start the network to enable event process
