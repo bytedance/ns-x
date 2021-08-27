@@ -11,16 +11,6 @@ func (p RawPacket) Size() int {
 	return len(p)
 }
 
-type SimulatePacket struct {
-	Data   Packet
-	Source Node
-	Target Node
-}
-
-func (p *SimulatePacket) Size() int {
-	return p.Data.Size()
-}
-
 // IPPacket is a packet for the ip protocol (ipv4)
 // DO NOT USE NOW, need further support
 type IPPacket struct {
