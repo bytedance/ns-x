@@ -7,33 +7,23 @@ import (
 
 // BasicNode is skeleton implementation of Node
 type BasicNode struct {
-	name     string
 	next     []base.Node
 	callback base.TransferCallback
 }
 
-// NewBasicNode creates a new BasicNode
-func NewBasicNode(name string, callback base.TransferCallback) *BasicNode {
-	return &BasicNode{
-		name:     name,
-		next:     []base.Node{},
-		callback: callback,
-	}
-}
-
-func (n *BasicNode) Name() string {
-	return n.name
-}
-
-func (n *BasicNode) ActualTransfer(packet base.Packet, source, target base.Node, now time.Time) []base.Event {
+func (n *BasicNode) actualTransfer(packet base.Packet, source, target base.Node, now time.Time) []base.Event {
 	if n.callback != nil {
 		n.callback(packet, source, target, now)
 	}
 	return target.Transfer(packet, now)
 }
 
-func (n *BasicNode) Transfer(base.Packet, time.Time) []base.Event {
-	panic("not implemented")
+func (n *BasicNode) GetTransferCallback() base.TransferCallback {
+	return n.callback
+}
+
+func (n *BasicNode) SetTransferCallback(callback base.TransferCallback) {
+	n.callback = callback
 }
 
 func (n *BasicNode) GetNext() []base.Node {
@@ -45,4 +35,12 @@ func (n *BasicNode) SetNext(nodes ...base.Node) {
 }
 
 func (n *BasicNode) Check() {
+}
+
+// WithTransferCallback create an option to set/overwrite the given transfer callback to nodes applied
+// node applied must be a BasicNode
+func WithTransferCallback(callback base.TransferCallback) Option {
+	return func(node base.Node) {
+		node.SetTransferCallback(callback)
+	}
 }

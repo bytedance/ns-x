@@ -13,10 +13,13 @@ type EndpointNode struct {
 
 type React func(packet base.Packet, now time.Time) []base.Event
 
-func NewEndpointNode(name string, callback base.TransferCallback) *EndpointNode {
-	return &EndpointNode{
-		BasicNode: NewBasicNode(name, callback),
+// NewEndpointNode create an EndpointNode with given options
+func NewEndpointNode(options ...Option) *EndpointNode {
+	n := &EndpointNode{
+		BasicNode: &BasicNode{},
 	}
+	apply(n, options...)
+	return n
 }
 
 func (n *EndpointNode) Transfer(packet base.Packet, now time.Time) []base.Event {
@@ -28,7 +31,7 @@ func (n *EndpointNode) Transfer(packet base.Packet, now time.Time) []base.Event 
 
 func (n *EndpointNode) Send(packet base.Packet, t time.Time) base.Event {
 	return base.NewFixedEvent(func(t time.Time) []base.Event {
-		return n.ActualTransfer(packet, n, n.next[0], t)
+		return n.actualTransfer(packet, n, n.GetNext()[0], t)
 	}, t)
 }
 
@@ -37,7 +40,7 @@ func (n *EndpointNode) Receive(callback React) {
 }
 
 func (n *EndpointNode) Check() {
-	if len(n.next) > 1 {
+	if len(n.GetNext()) > 1 {
 		panic("endpoint node can has at most single connection")
 	}
 	n.BasicNode.Check()

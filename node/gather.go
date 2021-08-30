@@ -10,17 +10,20 @@ type GatherNode struct {
 	*BasicNode
 }
 
-func NewGatherNode(name string) *GatherNode {
-	return &GatherNode{&BasicNode{name: name}}
+// NewGatherNode create a gather node
+func NewGatherNode(options ...Option) *GatherNode {
+	n := &GatherNode{&BasicNode{}}
+	apply(n, options...)
+	return n
 }
 
 func (n *GatherNode) Transfer(packet base.Packet, now time.Time) []base.Event {
-	if len(n.next) != 1 {
+	if len(n.GetNext()) != 1 {
 		panic("gather node can only has single connection")
 	}
 	return base.Aggregate(
 		base.NewFixedEvent(func(t time.Time) []base.Event {
-			return n.ActualTransfer(packet, n, n.next[0], t)
+			return n.actualTransfer(packet, n, n.GetNext()[0], t)
 		}, now),
 	)
 }
