@@ -200,18 +200,20 @@ func main() {
 	callback := func(packet base.Packet, source, target base.Node, now time.Time) {
 		println("emit packet")
 	}
-	n1 := node.NewEndpointNode("entry1", nil)
+	n1 := node.NewEndpointNode()
+	t := time.Now()
 	network, nodes := helper.
 		Chain().
-		Node(n1).
-		Node(node.NewChannelNode("", callback, math.NewRandomLoss(0.1, random))).
-		Node(node.NewRestrictNode("", nil, 1.0, 1024.0, 8192, 20)).
-		Node(node.NewEndpointNode("endpoint", nil)).
+		NodeWithName("entry1", n1).
+		Node(node.NewChannelNode(node.WithTransferCallback(callback), node.WithPacketHandler(math.NewRandomLoss(0.1, random)))).
+		Node(node.NewRestrictNode(node.WithPPSLimit(1, 20))).
+		NodeWithName("endpoint", node.NewEndpointNode()).
 		Chain().
-		Node(node.NewEndpointNode("entry2", nil)).
-		Node(node.NewChannelNode("", callback, math.NewRandomLoss(0.1, random))).
+		NodeWithName("entry2", node.NewEndpointNode()).
+		Node(node.NewChannelNode(node.WithTransferCallback(callback), node.WithPacketHandler(math.NewRandomLoss(0.1, random)))).
 		NodeOfName("endpoint").
-		Build(tick.NewStepClock(time.Now(), time.Second))
+		Summary().
+		Build(tick.NewStepClock(t, time.Second))
 	entry1 := nodes["entry1"].(*node.EndpointNode)
 	entry2 := nodes["entry2"].(*node.EndpointNode)
 	endpoint := nodes["endpoint"].(*node.EndpointNode)
@@ -227,15 +229,17 @@ func main() {
 	total := 20
 	events := make([]base.Event, 0, total*2)
 	for i := 0; i < 20; i++ {
-		events = append(events, entry1.Send(base.RawPacket([]byte{0x01, 0x02}), time.Now()))
+		events = append(events, entry1.Send(base.RawPacket([]byte{0x01, 0x02}), t))
 	}
 	for i := 0; i < 20; i++ {
-		events = append(events, entry2.Send(base.RawPacket([]byte{0x01, 0x02}), time.Now()))
+		events = append(events, entry2.Send(base.RawPacket([]byte{0x01, 0x02}), t))
 	}
-	event, cancel := base.NewPeriodicEvent(func(t time.Time) []base.Event {
-		println("current time", t.String())
+	event, cancel := base.NewPeriodicEvent(func(now time.Time) []base.Event {
+		for i := 0; i < 10; i++ {
+			_ = rand.Int()
+		}
 		return nil
-	}, time.Second, time.Now())
+	}, time.Second, t)
 	events = append(events, event)
 	network.Start(ns_x.Config{
 		BucketSize:    time.Second,
