@@ -15,11 +15,11 @@ type Builder interface {
 	// Node connect the given node to the end of current chain, and name it if given node's name is not empty
 	Node(node base.Node) Builder
 	// Group insert a group to current chain, which means end of current chain will be connected to in node, and the end of current chain will be set to out node
-	Group(in, out base.Node) Builder
+	Group(inName, outName string) Builder
 	// NodeWithName same to Node, but use the given name instead of node's name
 	NodeWithName(name string, node base.Node) Builder
 	// GroupWithName same to Group, but name the whole group with the given name
-	GroupWithName(name string, in, out base.Node) Builder
+	GroupWithName(name string, inName, outName string) Builder
 	// NodeOfName find the node with the given name, and then connect it to the end of the chain
 	NodeOfName(name string) Builder
 	// GroupOfName find the group with the given name, and then perform the Group operation on it
@@ -32,7 +32,7 @@ type Builder interface {
 }
 
 type group struct {
-	in, out base.Node
+	inName, outName string
 }
 
 type builder struct {
@@ -72,36 +72,31 @@ func (b *builder) NodeWithName(name string, node base.Node) Builder {
 	}
 	if _, ok := b.nodes[node]; !ok {
 		b.nodes[node] = len(b.nodes)
-		if name != "" {
-			b.names[name] = node
-		}
+	}
+	if name != "" {
+		b.names[name] = node
 	}
 	b.current = node
 	return b
 }
 
-func (b *builder) Group(in, out base.Node) Builder {
-	return b.GroupWithName("", in, out)
+func (b *builder) Group(inName, outName string) Builder {
+	return b.GroupWithName("", inName, outName)
 }
 
-func (b *builder) GroupWithName(name string, in, out base.Node) Builder {
-	if in == nil || out == nil {
-		panic("in and out node of any group cannot be nil")
-	}
+func (b *builder) GroupWithName(name string, inName, outName string) Builder {
 	if name != "" {
-		b.groups[name] = &group{in: in, out: out}
+		b.groups[name] = &group{inName: inName, outName: outName}
 	}
+	in := b.requireNodeByName(inName)
+	out := b.requireNodeByName(outName)
 	b.Node(in)
 	b.current = out
 	return b
 }
 
 func (b *builder) NodeOfName(name string) Builder {
-	node, ok := b.names[name]
-	if !ok {
-		panic("no node with name: " + name)
-	}
-	return b.Node(node)
+	return b.Node(b.requireNodeByName(name))
 }
 
 func (b *builder) GroupOfName(name string) Builder {
@@ -109,7 +104,7 @@ func (b *builder) GroupOfName(name string) Builder {
 	if !ok {
 		panic("no group with name: " + name)
 	}
-	return b.Group(group.in, group.out)
+	return b.Group(group.inName, group.outName)
 }
 
 func (b *builder) Summary() Builder {
@@ -150,10 +145,12 @@ func (b *builder) toString(node base.Node, index int) string {
 		sb.WriteString(t.Name())
 	}
 	sb.WriteString(", next: [")
-	for _, n := range node.GetNext() {
-		sb.WriteString(strconv.Itoa(b.nodes[n]))
-		sb.WriteString(", ")
+	connection := b.connections[node]
+	next := make([]string, 0, len(connection))
+	for n := range connection {
+		next = append(next, strconv.Itoa(b.nodes[n]))
 	}
+	sb.WriteString(strings.Join(next, ","))
 	sb.WriteString("]}")
 	return sb.String()
 }
@@ -164,4 +161,15 @@ func normalize(nodes map[base.Node]interface{}) []base.Node {
 		result = append(result, node)
 	}
 	return result
+}
+
+func (b *builder) requireNodeByName(name string) base.Node {
+	if name == "" {
+		panic("name cannot be empty string")
+	}
+	node, ok := b.names[name]
+	if !ok {
+		panic("no node with name " + name)
+	}
+	return node
 }
