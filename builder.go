@@ -9,14 +9,15 @@ import (
 )
 
 // Builder is a convenience tool to describe the whole network and build
+// when a node is described for the first time, a unique id is assigned to it, which will be the index of node in the built network
 type Builder interface {
 	// Chain save the current chain and begin to describe a new chain
 	Chain() Builder
-	// Node connect the given node to the end of current chain, and name it if given node's name is not empty
+	// Node connect the given node to the end of current chain
 	Node(node base.Node) Builder
 	// Group insert a group to current chain, which means end of current chain will be connected to in node, and the end of current chain will be set to out node
 	Group(inName, outName string) Builder
-	// NodeWithName same to Node, but use the given name instead of node's name
+	// NodeWithName same to Node, but name it with the given name
 	NodeWithName(name string, node base.Node) Builder
 	// GroupWithName same to Group, but name the whole group with the given name
 	GroupWithName(name string, inName, outName string) Builder
@@ -36,18 +37,20 @@ type group struct {
 }
 
 type builder struct {
-	nodes       map[base.Node]int
-	names       map[string]base.Node
-	groups      map[string]*group
+	nodeToID    map[base.Node]int
+	nameToNode  map[string]base.Node
+	nodeToName  map[base.Node]string
+	nameToGroup map[string]*group
 	current     base.Node
 	connections map[base.Node]map[base.Node]interface{}
 }
 
 func NewBuilder() Builder {
 	return &builder{
-		nodes:       map[base.Node]int{},
-		names:       map[string]base.Node{},
-		groups:      map[string]*group{},
+		nodeToID:    map[base.Node]int{},
+		nameToNode:  map[string]base.Node{},
+		nodeToName:  map[base.Node]string{},
+		nameToGroup: map[string]*group{},
 		connections: map[base.Node]map[base.Node]interface{}{},
 	}
 }
@@ -58,7 +61,7 @@ func (b *builder) Chain() Builder {
 }
 
 func (b *builder) Node(node base.Node) Builder {
-	return b.NodeWithName(node.Name(), node)
+	return b.NodeWithName("", node)
 }
 
 func (b *builder) NodeWithName(name string, node base.Node) Builder {
@@ -70,11 +73,12 @@ func (b *builder) NodeWithName(name string, node base.Node) Builder {
 		}
 		connection[node] = nil
 	}
-	if _, ok := b.nodes[node]; !ok {
-		b.nodes[node] = len(b.nodes)
+	if _, ok := b.nodeToID[node]; !ok {
+		b.nodeToID[node] = len(b.nodeToID)
 	}
 	if name != "" {
-		b.names[name] = node
+		b.nameToNode[name] = node
+		b.nodeToName[node] = name
 	}
 	b.current = node
 	return b
@@ -86,7 +90,7 @@ func (b *builder) Group(inName, outName string) Builder {
 
 func (b *builder) GroupWithName(name string, inName, outName string) Builder {
 	if name != "" {
-		b.groups[name] = &group{inName: inName, outName: outName}
+		b.nameToGroup[name] = &group{inName: inName, outName: outName}
 	}
 	in := b.requireNodeByName(inName)
 	out := b.requireNodeByName(outName)
@@ -100,7 +104,7 @@ func (b *builder) NodeOfName(name string) Builder {
 }
 
 func (b *builder) GroupOfName(name string) Builder {
-	group, ok := b.groups[name]
+	group, ok := b.nameToGroup[name]
 	if !ok {
 		panic("no group with name: " + name)
 	}
@@ -108,9 +112,9 @@ func (b *builder) GroupOfName(name string) Builder {
 }
 
 func (b *builder) Summary() Builder {
-	nodes := make([]base.Node, len(b.nodes))
+	nodes := make([]base.Node, len(b.nodeToID))
 	println("network summary: ")
-	for node, index := range b.nodes {
+	for node, index := range b.nodeToID {
 		nodes[index] = node
 	}
 	for index, node := range nodes {
@@ -121,14 +125,14 @@ func (b *builder) Summary() Builder {
 }
 
 func (b *builder) Build(clock tick.Clock) (*Network, map[string]base.Node) {
-	nodes := make([]base.Node, len(b.nodes))
-	for node, index := range b.nodes {
+	nodes := make([]base.Node, len(b.nodeToID))
+	for node, index := range b.nodeToID {
 		nodes[index] = node
 	}
 	for node, connection := range b.connections {
 		node.SetNext(normalize(connection)...)
 	}
-	return NewNetwork(nodes, clock), b.names
+	return NewNetwork(nodes, clock), b.nameToNode
 }
 
 func (b *builder) toString(node base.Node, index int) string {
@@ -136,7 +140,7 @@ func (b *builder) toString(node base.Node, index int) string {
 	sb.WriteString("node ")
 	sb.WriteString(strconv.Itoa(index))
 	sb.WriteString(": {name: \"")
-	sb.WriteString(node.Name())
+	sb.WriteString(b.nodeToName[node])
 	sb.WriteString("\", type: ")
 	t := reflect.TypeOf(node)
 	if t.Kind() == reflect.Ptr {
@@ -148,7 +152,7 @@ func (b *builder) toString(node base.Node, index int) string {
 	connection := b.connections[node]
 	next := make([]string, 0, len(connection))
 	for n := range connection {
-		next = append(next, strconv.Itoa(b.nodes[n]))
+		next = append(next, strconv.Itoa(b.nodeToID[n]))
 	}
 	sb.WriteString(strings.Join(next, ","))
 	sb.WriteString("]}")
@@ -167,7 +171,7 @@ func (b *builder) requireNodeByName(name string) base.Node {
 	if name == "" {
 		panic("name cannot be empty string")
 	}
-	node, ok := b.names[name]
+	node, ok := b.nameToNode[name]
 	if !ok {
 		panic("no node with name " + name)
 	}

@@ -28,12 +28,13 @@ type ChannelNode struct {
 	handler PacketHandler
 }
 
-// NewChannelNode creates a new channel
-func NewChannelNode(name string, onEmitCallback base.TransferCallback, handler PacketHandler) *ChannelNode {
-	return &ChannelNode{
-		BasicNode: NewBasicNode(name, onEmitCallback),
-		handler:   handler,
+// NewChannelNode creates a new ChannelNode with the given options
+func NewChannelNode(options ...Option) *ChannelNode {
+	n := &ChannelNode{
+		BasicNode: &BasicNode{},
 	}
+	apply(n, options...)
+	return n
 }
 
 func (n *ChannelNode) Transfer(packet base.Packet, now time.Time) []base.Event {
@@ -47,7 +48,7 @@ func (n *ChannelNode) Transfer(packet base.Packet, now time.Time) []base.Event {
 	if !loss {
 		return base.Aggregate(
 			base.NewDelayedEvent(func(t time.Time) []base.Event {
-				return n.ActualTransfer(packet, n, n.next[0], t)
+				return n.actualTransfer(packet, n, n.GetNext()[0], t)
 			}, delay, now),
 		)
 	}
@@ -55,8 +56,20 @@ func (n *ChannelNode) Transfer(packet base.Packet, now time.Time) []base.Event {
 }
 
 func (n *ChannelNode) Check() {
-	if len(n.next) != 1 {
+	if len(n.GetNext()) != 1 {
 		panic("channel node can only has single connection")
 	}
 	n.BasicNode.Check()
+}
+
+// WithPacketHandler create an option to set/overwrite the given packet handler to nodes applied
+// node applied must be a ChannelNode
+func WithPacketHandler(handler PacketHandler) Option {
+	return func(node base.Node) {
+		n, ok := node.(*ChannelNode)
+		if !ok {
+			panic("cannot set packet handler")
+		}
+		n.handler = handler
+	}
 }

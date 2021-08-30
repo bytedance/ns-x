@@ -18,17 +18,17 @@ func main() {
 	callback := func(packet base.Packet, source, target base.Node, now time.Time) {
 		println("emit packet")
 	}
-	n1 := node.NewEndpointNode("entry1", nil)
+	n1 := node.NewEndpointNode()
 	t := time.Now()
 	network, nodes := helper.
 		Chain().
-		Node(n1).
-		Node(node.NewChannelNode("", callback, math.NewRandomLoss(0.1, random))).
-		Node(node.NewRestrictNode("", nil, 1.0, 1024.0, 8192, 20)).
-		Node(node.NewEndpointNode("endpoint", nil)).
+		NodeWithName("entry1", n1).
+		Node(node.NewChannelNode(node.WithTransferCallback(callback), node.WithPacketHandler(math.NewRandomLoss(0.1, random)))).
+		Node(node.NewRestrictNode(node.WithPPSLimit(1, 20))).
+		NodeWithName("endpoint", node.NewEndpointNode()).
 		Chain().
-		Node(node.NewEndpointNode("entry2", nil)).
-		Node(node.NewChannelNode("", callback, math.NewRandomLoss(0.1, random))).
+		NodeWithName("entry2", node.NewEndpointNode()).
+		Node(node.NewChannelNode(node.WithTransferCallback(callback), node.WithPacketHandler(math.NewRandomLoss(0.1, random)))).
 		NodeOfName("endpoint").
 		Summary().
 		Build(tick.NewStepClock(t, time.Second))

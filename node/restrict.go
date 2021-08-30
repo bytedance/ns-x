@@ -17,18 +17,18 @@ type RestrictNode struct {
 	busyTime                          time.Time
 }
 
-// NewRestrictNode create a new restrict with the given parameter
-// next, recordSize, callback the same as BasicNode
-// ppsLimit, bpsLimit: the limit of packets per second/bytes per second
-// bufferSizeLimit, bufferCountLimit: the limit of waiting packets, in bytes/packets
-func NewRestrictNode(name string, onEmitCallback base.TransferCallback, ppsLimit, bpsLimit float64, bufferSizeLimit, bufferCountLimit int64) *RestrictNode {
-	return &RestrictNode{
-		BasicNode:        NewBasicNode(name, onEmitCallback),
-		ppsLimit:         ppsLimit,
-		bpsLimit:         bpsLimit,
-		bufferSizeLimit:  bufferSizeLimit,
-		bufferCountLimit: bufferCountLimit,
+// NewRestrictNode create a new RestrictNode with the given options
+func NewRestrictNode(options ...Option) *RestrictNode {
+	n := &RestrictNode{
+		BasicNode: &BasicNode{},
+		ppsLimit:  -1,
+		bpsLimit:  -1,
 	}
+	apply(n, options...)
+	if n.ppsLimit <= 0 && n.bpsLimit <= 0 {
+		panic("a restrict node must be limited in pps/bps")
+	}
+	return n
 }
 
 func (n *RestrictNode) Transfer(packet base.Packet, now time.Time) []base.Event {
@@ -56,13 +56,43 @@ func (n *RestrictNode) Transfer(packet base.Packet, now time.Time) []base.Event 
 				n.bufferSize -= int64(packet.Size())
 				n.bufferCount--
 			}
-			return n.ActualTransfer(packet, n, n.next[0], t)
+			return n.actualTransfer(packet, n, n.GetNext()[0], t)
 		}, t),
 	)
 }
 
 func (n *RestrictNode) Check() {
-	if len(n.next) != 1 {
+	if len(n.GetNext()) != 1 {
 		panic("restrict node can only has single connection")
+	}
+}
+
+// WithPPSLimit create an option set/overwrite pps limit and buffer count limit to nodes applied
+// once flow of the node calculated in packets/second reach pps limit, further packets will be put into the buffer
+// once total count of packets in the buffer reach the buffer count limit, further packets will be ignored
+// node applied must be a RestrictNode
+func WithPPSLimit(ppsLimit float64, bufferCountLimit int64) Option {
+	return func(node base.Node) {
+		n, ok := node.(*RestrictNode)
+		if !ok {
+			panic("cannot set pps limit")
+		}
+		n.ppsLimit = ppsLimit
+		n.bufferCountLimit = bufferCountLimit
+	}
+}
+
+// WithBPSLimit create an option set/overwrite bps limit and buffer size limit to nodes applied
+// once flow of the node calculated in bytes/second reach pps limit, further packets will be put into the buffer
+// once total size of packets in the buffer reach the buffer size limit, further packets will be ignored
+// node applied must be a RestrictNode
+func WithBPSLimit(bpsLimit float64, bufferSizeLimit int64) Option {
+	return func(node base.Node) {
+		n, ok := node.(*RestrictNode)
+		if !ok {
+			panic("cannot set pps limit")
+		}
+		n.bpsLimit = bpsLimit
+		n.bufferSizeLimit = bufferSizeLimit
 	}
 }

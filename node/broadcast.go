@@ -11,18 +11,20 @@ type BroadcastNode struct {
 	*BasicNode
 }
 
-// NewBroadcastNode creates a new BroadcastNode with given Node(s)
-func NewBroadcastNode(name string, callback base.TransferCallback) *BroadcastNode {
-	return &BroadcastNode{
-		BasicNode: NewBasicNode(name, callback),
+// NewBroadcastNode creates a new BroadcastNode with given options
+func NewBroadcastNode(options ...Option) *BroadcastNode {
+	n := &BroadcastNode{
+		BasicNode: &BasicNode{},
 	}
+	apply(n, options...)
+	return n
 }
 
 func (n *BroadcastNode) Transfer(packet base.Packet, now time.Time) []base.Event {
-	events := make([]base.Event, len(n.next))
-	for index, node := range n.next {
+	events := make([]base.Event, len(n.GetNext()))
+	for index, node := range n.GetNext() {
 		events[index] = base.NewFixedEvent(func(t time.Time) []base.Event {
-			return n.ActualTransfer(packet, n, node, t)
+			return n.actualTransfer(packet, n, node, t)
 		}, now)
 	}
 	return events
