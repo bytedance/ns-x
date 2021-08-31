@@ -18,7 +18,7 @@ func NewRandomLoss(possibility float64, random *rand.Rand) node.Loss {
 // NewGilbertLoss loss with gilbert-elliott model, see https://en.wikipedia.org/wiki/Burst_error
 func NewGilbertLoss(g2b, b2g float64, lossG, lossB float64, random *rand.Rand) node.Loss {
 	state := false // true for good state, false for bad state
-	return func(packet base.Packet) bool {
+	return func(base.Packet) bool {
 		loss := false
 		if state {
 			if random.Float64() < lossG {
