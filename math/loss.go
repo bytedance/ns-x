@@ -10,6 +10,9 @@ import (
 
 // NewRandomLoss loss with the given possibility
 func NewRandomLoss(possibility float64, random *rand.Rand) node.Loss {
+	if possibility < 0 || possibility > 1 || random == nil {
+		panic("invalid argument")
+	}
 	return func(base.Packet) bool {
 		return random.Float64() < possibility
 	}
@@ -17,6 +20,9 @@ func NewRandomLoss(possibility float64, random *rand.Rand) node.Loss {
 
 // NewGilbertLoss loss with gilbert-elliott model, see https://en.wikipedia.org/wiki/Burst_error
 func NewGilbertLoss(g2b, b2g float64, lossG, lossB float64, random *rand.Rand) node.Loss {
+	if g2b < 0 || g2b > 1 || b2g < 0 || b2g > 1 || lossG < 0 || lossG > 1 || lossB < 0 || lossB > 1 || random == nil {
+		panic("invalid argument")
+	}
 	state := false // true for good state, false for bad state
 	return func(base.Packet) bool {
 		loss := false
