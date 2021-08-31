@@ -12,6 +12,9 @@ import (
 // NewNormalReorder for correlation possibility, reorder same to last packet, or reorder with the given possibility
 // reorder means the packet will be sent delta time in advance
 func NewNormalReorder(delta time.Duration, possibility, correlation float64, random *rand.Rand) node.Reorder {
+	if delta < 0 || possibility < 0 || possibility > 1 || correlation < 0 || correlation > 1 || random == nil {
+		panic("invalid argument")
+	}
 	last := false
 	return func(base.Packet) time.Duration {
 		if random.Float64() >= correlation {
@@ -25,8 +28,11 @@ func NewNormalReorder(delta time.Duration, possibility, correlation float64, ran
 }
 
 // NewGapReorder for following gap packets after a reorder packet, no reorder; otherwise same to normal reorder
-func NewGapReorder(delta time.Duration, possibility, correlation float64, gap int, random *rand.Rand) node.Reorder {
-	count := 0
+func NewGapReorder(delta time.Duration, possibility, correlation float64, gap uint, random *rand.Rand) node.Reorder {
+	if delta < 0 || possibility < 0 || possibility > 1 || correlation < 0 || correlation > 1 || random == nil {
+		panic("invalid argument")
+	}
+	count := uint(0)
 	last := false
 	return func(base.Packet) time.Duration {
 		count++
