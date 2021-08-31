@@ -28,7 +28,7 @@ func NewNormalReorder(delta time.Duration, possibility, correlation float64, ran
 func NewGapReorder(delta time.Duration, possibility, correlation float64, gap int, random *rand.Rand) node.Reorder {
 	count := 0
 	last := false
-	return func(packet base.Packet) time.Duration {
+	return func(base.Packet) time.Duration {
 		count++
 		if count < gap {
 			last = false
