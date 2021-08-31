@@ -17,10 +17,10 @@ func echo() {
 	network, nodes := helper.
 		Chain().
 		NodeWithName("restrict 1", node.NewRestrictNode(node.WithBPSLimit(1024*1024, 4*1024*1024))).
-		NodeWithName("channel 1", node.NewChannelNode(node.WithPacketHandler(math.NewRandomLoss(0.1, random)))).
+		NodeWithName("channel 1", node.NewChannelNode(node.WithLoss(math.NewRandomLoss(0.1, random)))).
 		Chain().
 		NodeWithName("restrict 2", node.NewRestrictNode(node.WithPPSLimit(10, 50))).
-		NodeWithName("channel 2", node.NewChannelNode(node.WithPacketHandler(math.NewRandomLoss(0.3, random)))).
+		NodeWithName("channel 2", node.NewChannelNode(node.WithLoss(math.NewRandomLoss(0.3, random)))).
 		Chain().
 		NodeWithName("endpoint 1", node.NewEndpointNode()).
 		Group("restrict 1", "channel 1").
