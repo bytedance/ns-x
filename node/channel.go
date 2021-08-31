@@ -5,15 +5,27 @@ import (
 	"time"
 )
 
-// PacketHandler handles how much a Packet delayed and whether lost according to historical records
-type PacketHandler func(packet base.Packet) (delay time.Duration, lost bool)
+// Loss whether the packet loss
+type Loss func(packet base.Packet) bool
 
-// Combine given handlers to sum up all their delays and losses
-func Combine(handlers ...PacketHandler) PacketHandler {
+// Delay how long for the packet
+type Delay func(packet base.Packet) time.Duration
+
+// Reorder advance how long for the packet
+type Reorder func(packet base.Packet) time.Duration
+
+// handler handles how much a Packet delayed and whether lost
+type handler func(packet base.Packet) (delay time.Duration, lost bool)
+
+// combine given handlers to sum up all their delays and losses
+func combine(handlers ...handler) handler {
 	return func(packet base.Packet) (time.Duration, bool) {
 		delay := time.Duration(0)
 		loss := false
 		for _, handler := range handlers {
+			if handler == nil {
+				continue
+			}
 			d, l := handler(packet)
 			delay += d
 			loss = l || loss
@@ -25,7 +37,7 @@ func Combine(handlers ...PacketHandler) PacketHandler {
 // ChannelNode is a simulated network channel with loss, delay and reorder features
 type ChannelNode struct {
 	*BasicNode
-	handler PacketHandler
+	handler handler
 }
 
 // NewChannelNode creates a new ChannelNode with the given options
@@ -41,18 +53,16 @@ func (n *ChannelNode) Transfer(packet base.Packet, now time.Time) []base.Event {
 	delay := time.Duration(0)
 	loss := false
 	if n.handler != nil {
-		d, l := n.handler(packet)
-		delay += d
-		loss = loss || l
+		delay, loss = n.handler(packet)
 	}
-	if !loss {
-		return base.Aggregate(
-			base.NewDelayedEvent(func(t time.Time) []base.Event {
-				return n.actualTransfer(packet, n, n.GetNext()[0], t)
-			}, delay, now),
-		)
+	if loss {
+		return nil
 	}
-	return nil
+	return base.Aggregate(
+		base.NewDelayedEvent(func(t time.Time) []base.Event {
+			return n.actualTransfer(packet, n, n.GetNext()[0], t)
+		}, delay, now),
+	)
 }
 
 func (n *ChannelNode) Check() {
@@ -62,14 +72,44 @@ func (n *ChannelNode) Check() {
 	n.BasicNode.Check()
 }
 
-// WithPacketHandler create an option to set/overwrite the given packet handler to nodes applied
+// WithLoss create an Option to add a Loss on the ChannelNode applied
 // node applied must be a ChannelNode
-func WithPacketHandler(handler PacketHandler) Option {
+func WithLoss(loss Loss) Option {
 	return func(node base.Node) {
 		n, ok := node.(*ChannelNode)
 		if !ok {
-			panic("cannot set packet handler")
+			panic("cannot set loss")
 		}
-		n.handler = handler
+		n.handler = combine(n.handler, func(packet base.Packet) (time.Duration, bool) {
+			return 0, loss(packet)
+		})
+	}
+}
+
+// WithDelay create an Option to add a Delay on the ChannelNode applied
+// node applied must be a ChannelNode
+func WithDelay(delay Delay) Option {
+	return func(node base.Node) {
+		n, ok := node.(*ChannelNode)
+		if !ok {
+			panic("cannot set delay")
+		}
+		n.handler = combine(n.handler, func(packet base.Packet) (time.Duration, bool) {
+			return delay(packet), false
+		})
+	}
+}
+
+// WithReorder create an Option to add a Reorder on the ChannelNode applied
+// node applied must be a ChannelNode
+func WithReorder(reorder Reorder) Option {
+	return func(node base.Node) {
+		n, ok := node.(*ChannelNode)
+		if !ok {
+			panic("cannot set reorder")
+		}
+		n.handler = combine(n.handler, func(packet base.Packet) (time.Duration, bool) {
+			return reorder(packet), false
+		})
 	}
 }

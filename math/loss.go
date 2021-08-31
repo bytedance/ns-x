@@ -4,90 +4,37 @@ import (
 	"github.com/bytedance/ns-x/v2/base"
 	"github.com/bytedance/ns-x/v2/node"
 	"math/rand"
-	"time"
 )
 
-// Loss in the network
-type Loss interface {
-	Loss() bool // the packet Loss if true
-}
+// some commonly used loss model
 
-// NoneLoss no loss
-type NoneLoss struct {
-}
-
-var _ Loss = &NoneLoss{}
-
-func NewNoneLoss() node.PacketHandler {
-	loss := &NoneLoss{}
-	return loss.PacketHandler
-}
-
-func (nl *NoneLoss) Loss() bool {
-	return false
-}
-
-func (nl *NoneLoss) PacketHandler(base.Packet) (time.Duration, bool) {
-	return 0, nl.Loss()
-}
-
-// RandomLoss loss with the given possibility
-type RandomLoss struct {
-	possibility float64
-	random      *rand.Rand
-}
-
-var _ Loss = &RandomLoss{}
-
-func NewRandomLoss(possibility float64, random *rand.Rand) node.PacketHandler {
-	loss := &RandomLoss{
-		possibility: possibility,
-		random:      random,
+// NewRandomLoss loss with the given possibility
+func NewRandomLoss(possibility float64, random *rand.Rand) node.Loss {
+	return func(base.Packet) bool {
+		return random.Float64() < possibility
 	}
-	return loss.PacketHandler
 }
 
-func (rl *RandomLoss) Loss() bool {
-	return rl.random.Float64() < rl.possibility
-}
-
-func (rl *RandomLoss) PacketHandler(base.Packet) (time.Duration, bool) {
-	return 0, rl.Loss()
-}
-
-// GilbertLoss Gilbert Loss Model
-type GilbertLoss struct {
-	s1Loss, s1Transit, s2Loss, s2Transit float64
-	gilbertState                         int
-	random                               *rand.Rand
-}
-
-var _ Loss = &GilbertLoss{}
-
-func NewGilbertLoss(s1Loss, s1Transit, s2Loss, s2Transit float64) node.PacketHandler {
-	loss := &GilbertLoss{
-		s1Loss:       s1Loss,
-		s1Transit:    s1Transit,
-		s2Loss:       s2Loss,
-		s2Transit:    s2Transit,
-		gilbertState: 0,
-	}
-	return loss.PacketHandler
-}
-
-func (gl *GilbertLoss) Loss() bool {
-	if gl.gilbertState == 0 {
-		if gl.random.Float64() < gl.s1Transit {
-			gl.gilbertState = 1
+// NewGilbertLoss loss with gilbert-elliott model, see https://en.wikipedia.org/wiki/Burst_error
+func NewGilbertLoss(g2b, b2g float64, lossG, lossB float64, random *rand.Rand) node.Loss {
+	state := false // true for good state, false for bad state
+	return func(packet base.Packet) bool {
+		loss := false
+		if state {
+			if random.Float64() < lossG {
+				loss = true
+			}
+			if random.Float64() < g2b {
+				state = false
+			}
+		} else {
+			if random.Float64() < lossB {
+				loss = true
+			}
+			if random.Float64() < b2g {
+				state = true
+			}
 		}
-		return gl.random.Float64() < gl.s1Loss
+		return loss
 	}
-	if gl.random.Float64() < gl.s2Transit {
-		gl.gilbertState = 0
-	}
-	return gl.random.Float64() < gl.s2Loss
-}
-
-func (gl *GilbertLoss) PacketHandler(base.Packet) (time.Duration, bool) {
-	return 0, gl.Loss()
 }

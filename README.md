@@ -205,12 +205,12 @@ func main() {
 	network, nodes := helper.
 		Chain().
 		NodeWithName("entry1", n1).
-		Node(node.NewChannelNode(node.WithTransferCallback(callback), node.WithPacketHandler(math.NewRandomLoss(0.1, random)))).
+		Node(node.NewChannelNode(node.WithTransferCallback(callback), node.WithLoss(math.NewRandomLoss(0.1, random)))).
 		Node(node.NewRestrictNode(node.WithPPSLimit(1, 20))).
 		NodeWithName("endpoint", node.NewEndpointNode()).
 		Chain().
 		NodeWithName("entry2", node.NewEndpointNode()).
-		Node(node.NewChannelNode(node.WithTransferCallback(callback), node.WithPacketHandler(math.NewRandomLoss(0.1, random)))).
+		Node(node.NewChannelNode(node.WithTransferCallback(callback), node.WithLoss(math.NewRandomLoss(0.1, random)))).
 		NodeOfName("endpoint").
 		Summary().
 		Build(tick.NewStepClock(t, time.Second))
