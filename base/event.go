@@ -1,7 +1,6 @@
 package base
 
 import (
-	"go.uber.org/atomic"
 	"time"
 )
 
@@ -44,21 +43,13 @@ func NewFixedEvent(action Action, time time.Time) Event {
 	return &event{time: time, action: action}
 }
 
-type Cancel func()
-
-// NewPeriodicEvent create a periodic event, with a function to cancel it
-func NewPeriodicEvent(action Action, period time.Duration, t time.Time) (Event, Cancel) {
-	flag := atomic.NewBool(true)
+// NewPeriodicEvent create a periodic event, generate itself each time
+func NewPeriodicEvent(action Action, period time.Duration, t time.Time) Event {
 	var actualAction func(now time.Time) []Event
 	actualAction = func(now time.Time) []Event {
-		if flag.Load() {
-			events := action(now)
-			events = append(events, NewFixedEvent(actualAction, now.Add(period)))
-			return events
-		}
-		return nil
+		events := action(now)
+		events = append(events, NewFixedEvent(actualAction, now.Add(period)))
+		return events
 	}
-	return NewFixedEvent(actualAction, t), func() {
-		flag.Store(false)
-	}
+	return NewFixedEvent(actualAction, t)
 }

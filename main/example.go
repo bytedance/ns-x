@@ -31,7 +31,7 @@ func main() {
 		Node(node.NewChannelNode(node.WithTransferCallback(callback), node.WithLoss(math.NewRandomLoss(0.1, random)))).
 		NodeOfName("endpoint").
 		Summary().
-		Build(tick.NewStepClock(t, time.Second))
+		Build()
 	entry1 := nodes["entry1"].(*node.EndpointNode)
 	entry2 := nodes["entry2"].(*node.EndpointNode)
 	endpoint := nodes["endpoint"].(*node.EndpointNode)
@@ -52,19 +52,13 @@ func main() {
 	for i := 0; i < 20; i++ {
 		events = append(events, entry2.Send(base.RawPacket([]byte{0x01, 0x02}), t))
 	}
-	event, cancel := base.NewPeriodicEvent(func(now time.Time) []base.Event {
+	event := base.NewPeriodicEvent(func(now time.Time) []base.Event {
 		for i := 0; i < 10; i++ {
 			_ = rand.Int()
 		}
 		return nil
 	}, time.Second, t)
 	events = append(events, event)
-	network.Start(ns_x.Config{
-		BucketSize:    time.Second,
-		MaxBuckets:    128,
-		InitialEvents: events,
-	})
-	defer network.Stop()
-	time.Sleep(time.Second)
-	cancel()
+	network.Run(events, tick.NewStepClock(t, time.Second), 300*time.Second)
+	defer network.Wait()
 }
