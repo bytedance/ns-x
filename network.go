@@ -3,46 +3,41 @@ package ns_x
 import (
 	"github.com/bytedance/ns-x/v2/base"
 	"github.com/bytedance/ns-x/v2/tick"
-	"go.uber.org/atomic"
 	"runtime"
 	"sync"
+	"time"
 )
 
 // Network Indicates a simulated network, which contains some simulated nodes
 type Network struct {
-	nodes   []base.Node
-	clock   tick.Clock
-	buffer  *base.EventBuffer
-	running *atomic.Bool
-	wg      *sync.WaitGroup
+	nodes  []base.Node
+	buffer *base.EventBuffer
+	wg     *sync.WaitGroup
 }
 
 // NewNetwork creates a network with the given nodes, connections of nodes should be already established.
-func NewNetwork(nodes []base.Node, clock tick.Clock) *Network {
+func NewNetwork(nodes []base.Node) *Network {
 	return &Network{
-		nodes:   nodes,
-		clock:   clock,
-		buffer:  base.NewEventBuffer(),
-		running: atomic.NewBool(false),
-		wg:      &sync.WaitGroup{},
+		nodes:  nodes,
+		buffer: base.NewEventBuffer(),
+		wg:     &sync.WaitGroup{},
 	}
 }
 
-// fetch events from nodes in the network, and put them into given heap
-func (n *Network) fetch(eventQueue *base.EventQueue) {
-	n.buffer.Reduce(func(event base.Event) {
-		eventQueue.Enqueue(event)
-	})
-}
-
-// drain the given heap if possible, and process the events available
-func (n *Network) drain(eventQueue *base.EventQueue) {
-	now := n.clock()
-	for !eventQueue.IsEmpty() {
+// eventLoop Main polling loop of network
+func (n *Network) eventLoop(eventQueue *base.EventQueue, clock tick.Clock, lifetime time.Duration) {
+	runtime.LockOSThread()
+	defer runtime.UnlockOSThread()
+	defer n.wg.Done()
+	now := clock()
+	deadline := now.Add(lifetime)
+	println("network main loop start at", now.String())
+	for !now.After(deadline) && !eventQueue.IsEmpty() {
 		p := eventQueue.Peek()
 		t := p.Time()
 		if t.After(now) {
-			break
+			now = clock()
+			continue
 		}
 		events := p.Action()(t)
 		eventQueue.Dequeue()
@@ -50,49 +45,31 @@ func (n *Network) drain(eventQueue *base.EventQueue) {
 			eventQueue.Enqueue(event)
 		}
 	}
+	println("network main loop end at", now.String())
 }
 
-// block until clear the given heap
-func (n *Network) clear(eventQueue *base.EventQueue) {
-	for !eventQueue.IsEmpty() {
-		n.drain(eventQueue)
-	}
-}
-
-// eventLoop Main polling loop of network
-func (n *Network) eventLoop(eventQueue *base.EventQueue) {
-	println("network main loop start")
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+// Run with the given config, users should Wait before another simulation or exit
+// some Config can be used on the simulation, default valued will be used if not specified
+// simulation will finish once no events remain or reach lifetime
+func (n *Network) Run(events []base.Event, clock tick.Clock, lifetime time.Duration, configs ...Config) {
 	n.wg.Add(1)
-	defer n.wg.Done()
-	for n.running.Load() {
-		n.fetch(eventQueue)
-		n.drain(eventQueue)
-	}
-	n.clear(eventQueue)
-	println("network main loop end at", n.clock().String())
-}
-
-// Start the network to enable event process
-func (n *Network) Start(config Config) {
-	if n.running.Load() {
-		return
-	}
-	n.running.Store(true)
 	for _, node := range n.nodes {
 		node.Check()
 	}
-	eventQueue := base.NewEventQueue(config.BucketSize, config.MaxBuckets)
-	for _, event := range config.InitialEvents {
+	config := &config{
+		bucketSize: DefaultBucketSize,
+		maxBuckets: DefaultMaxBuckets,
+	}
+	config.apply(configs...)
+	eventQueue := base.NewEventQueue(config.bucketSize, config.maxBuckets)
+	for _, event := range events {
 		eventQueue.Enqueue(event)
 	}
-	go n.eventLoop(eventQueue)
+	go n.eventLoop(eventQueue, clock, lifetime)
 }
 
-// Stop the network, release resources
-func (n *Network) Stop() {
-	n.running.Store(false)
+// Wait until simulation finish
+func (n *Network) Wait() {
 	n.wg.Wait()
 }
 

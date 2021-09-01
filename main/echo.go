@@ -30,21 +30,16 @@ func echo() {
 		Group("restrict 2", "channel 2").
 		NodeOfName("endpoint 1").
 		Summary().
-		Build(tick.NewStepClock(now, time.Second))
+		Build()
 	endpoint1 := nodes["endpoint 1"].(*node.EndpointNode)
 	endpoint2 := nodes["endpoint 2"].(*node.EndpointNode)
-	config := ns_x.Config{
-		BucketSize:    time.Second,
-		MaxBuckets:    128,
-		InitialEvents: []base.Event{endpoint1.Send(base.RawPacket("hello world"), now)},
-	}
 	endpoint1.Receive(func(packet base.Packet, now time.Time) []base.Event {
 		return base.Aggregate(endpoint1.Send(packet, now))
 	})
 	endpoint2.Receive(func(packet base.Packet, now time.Time) []base.Event {
 		return base.Aggregate(endpoint2.Send(packet, now))
 	})
-	network.Start(config)
-	defer network.Stop()
+	network.Run([]base.Event{endpoint1.Send(base.RawPacket("hello world"), now)}, tick.NewStepClock(now, time.Second), 30*time.Second)
+	defer network.Wait()
 	time.Sleep(time.Second)
 }
