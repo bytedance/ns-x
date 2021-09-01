@@ -20,6 +20,10 @@ type event struct {
 // Action is what to do of an event, time of the event is passed in, return following events of this event
 type Action func(time.Time) []Event
 
+// RepeatAction is same to Action, but repeated after the return delay.
+// if return delay is negative, no longer repeat
+type RepeatAction func(time.Time) ([]Event, time.Duration)
+
 func (e *event) Time() time.Time {
 	return e.time
 }
@@ -45,10 +49,19 @@ func NewFixedEvent(action Action, time time.Time) Event {
 
 // NewPeriodicEvent create a periodic event, generate itself each time
 func NewPeriodicEvent(action Action, period time.Duration, t time.Time) Event {
+	return NewRepeatEvent(func(now time.Time) ([]Event, time.Duration) {
+		return action(now), period
+	}, t)
+}
+
+// NewRepeatEvent create an event repeated after the return delay, if such delay is not negative
+func NewRepeatEvent(action RepeatAction, t time.Time) Event {
 	var actualAction func(now time.Time) []Event
 	actualAction = func(now time.Time) []Event {
-		events := action(now)
-		events = append(events, NewFixedEvent(actualAction, now.Add(period)))
+		events, delay := action(now)
+		if delay >= 0 {
+			events = append(events, NewDelayedEvent(actualAction, delay, now))
+		}
 		return events
 	}
 	return NewFixedEvent(actualAction, t)
