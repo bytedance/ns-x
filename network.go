@@ -25,12 +25,12 @@ func NewNetwork(nodes []base.Node) *Network {
 }
 
 // eventLoop Main polling loop of network
-func (n *Network) eventLoop(eventQueue *base.EventQueue, clock tick.Clock, ttl time.Duration) {
+func (n *Network) eventLoop(eventQueue *base.EventQueue, clock tick.Clock, lifetime time.Duration) {
 	runtime.LockOSThread()
 	defer runtime.UnlockOSThread()
 	defer n.wg.Done()
 	now := clock()
-	deadline := now.Add(ttl)
+	deadline := now.Add(lifetime)
 	println("network main loop start at", now.String())
 	for !now.After(deadline) && !eventQueue.IsEmpty() {
 		p := eventQueue.Peek()
@@ -50,8 +50,8 @@ func (n *Network) eventLoop(eventQueue *base.EventQueue, clock tick.Clock, ttl t
 
 // Run with the given config, users should Wait before another simulation or exit
 // some Config can be used on the simulation, default valued will be used if not specified
-// simulation will finish once no events remain or reach ttl
-func (n *Network) Run(events []base.Event, clock tick.Clock, ttl time.Duration, configs ...Config) {
+// simulation will finish once no events remain or reach lifetime
+func (n *Network) Run(events []base.Event, clock tick.Clock, lifetime time.Duration, configs ...Config) {
 	n.wg.Add(1)
 	for _, node := range n.nodes {
 		node.Check()
@@ -65,7 +65,7 @@ func (n *Network) Run(events []base.Event, clock tick.Clock, ttl time.Duration, 
 	for _, event := range events {
 		eventQueue.Enqueue(event)
 	}
-	go n.eventLoop(eventQueue, clock, ttl)
+	go n.eventLoop(eventQueue, clock, lifetime)
 }
 
 // Wait until simulation finish
