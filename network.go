@@ -3,7 +3,6 @@ package ns_x
 import (
 	"github.com/bytedance/ns-x/v2/base"
 	"github.com/bytedance/ns-x/v2/tick"
-	"go.uber.org/atomic"
 	"runtime"
 	"sync"
 	"time"
@@ -11,32 +10,28 @@ import (
 
 // Network Indicates a simulated network, which contains some simulated nodes
 type Network struct {
-	nodes   []base.Node
-	buffer  *base.EventBuffer
-	running *atomic.Bool
-	wg      *sync.WaitGroup
+	nodes  []base.Node
+	buffer *base.EventBuffer
+	wg     *sync.WaitGroup
 }
 
 // NewNetwork creates a network with the given nodes, connections of nodes should be already established.
 func NewNetwork(nodes []base.Node) *Network {
 	return &Network{
-		nodes:   nodes,
-		buffer:  base.NewEventBuffer(),
-		running: atomic.NewBool(false),
-		wg:      &sync.WaitGroup{},
+		nodes:  nodes,
+		buffer: base.NewEventBuffer(),
+		wg:     &sync.WaitGroup{},
 	}
 }
 
 // eventLoop Main polling loop of network
 func (n *Network) eventLoop(eventQueue *base.EventQueue, clock tick.Clock, ttl time.Duration) {
-	defer n.running.Store(false)
 	runtime.LockOSThread()
 	defer runtime.UnlockOSThread()
+	defer n.wg.Done()
 	now := clock()
 	deadline := now.Add(ttl)
-	println("network main loop start at ", now)
-	n.wg.Add(1)
-	defer n.wg.Done()
+	println("network main loop start at", now.String())
 	for !now.After(deadline) && !eventQueue.IsEmpty() {
 		p := eventQueue.Peek()
 		t := p.Time()
@@ -50,17 +45,14 @@ func (n *Network) eventLoop(eventQueue *base.EventQueue, clock tick.Clock, ttl t
 			eventQueue.Enqueue(event)
 		}
 	}
-	println("network main loop end at", now)
+	println("network main loop end at", now.String())
 }
 
-// Run with the given config, users should Wait before exit
+// Run with the given config, users should Wait before another simulation or exit
 // some Config can be used on the simulation, default valued will be used if not specified
 // simulation will finish once no events remain or reach ttl
 func (n *Network) Run(events []base.Event, clock tick.Clock, ttl time.Duration, configs ...Config) {
-	if n.running.Load() {
-		return
-	}
-	n.running.Store(true)
+	n.wg.Add(1)
 	for _, node := range n.nodes {
 		node.Check()
 	}
