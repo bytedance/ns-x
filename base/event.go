@@ -10,6 +10,8 @@ type Event interface {
 	Time() time.Time
 	// Action what to do
 	Action() Action
+	HookBefore(action Action)
+	HookAfter(action Action)
 }
 
 type event struct {
@@ -30,6 +32,32 @@ func (e *event) Time() time.Time {
 
 func (e *event) Action() Action {
 	return e.action
+}
+
+func (e *event) HookBefore(action Action) {
+	actualAction := func(t time.Time) (events []Event) {
+		for _, event := range action(t) {
+			events = append(events, event)
+		}
+		for _, event := range e.action(t) {
+			events = append(events, event)
+		}
+		return
+	}
+	e.action = actualAction
+}
+
+func (e *event) HookAfter(action Action) {
+	actualAction := func(t time.Time) (events []Event) {
+		for _, event := range e.action(t) {
+			events = append(events, event)
+		}
+		for _, event := range action(t) {
+			events = append(events, event)
+		}
+		return
+	}
+	e.action = actualAction
 }
 
 // Aggregate the events into a slice, utility function
