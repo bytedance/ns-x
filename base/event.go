@@ -10,7 +10,9 @@ type Event interface {
 	Time() time.Time
 	// Action what to do
 	Action() Action
+	// HookBefore hook the event with the given action handled before the actual action
 	HookBefore(action Action)
+	// HookAfter hook the event with the given action handled after the actual action
 	HookAfter(action Action)
 }
 
