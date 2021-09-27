@@ -29,12 +29,28 @@ func (n *EndpointNode) Transfer(packet base.Packet, now time.Time) []base.Event 
 	return nil
 }
 
+// Send return the event which send the packet at the given time
+// users need to insert the event returned into simulation by themselves
 func (n *EndpointNode) Send(packet base.Packet, t time.Time) base.Event {
-	return base.NewFixedEvent(func(t time.Time) []base.Event {
-		return n.actualTransfer(packet, n, n.GetNext()[0], t)
+	return n.SendSupplied(func() base.Packet {
+		return packet
 	}, t)
 }
 
+// SendSupplied same to Send, but packet to be sent is not supplied until the event occur
+func (n *EndpointNode) SendSupplied(supplier PacketSupplier, t time.Time) base.Event {
+	return base.NewFixedEvent(func(t time.Time) []base.Event {
+		packet := supplier()
+		if packet != nil {
+			return n.actualTransfer(packet, n, n.GetNext()[0], t)
+		} else {
+			return nil
+		}
+	}, t)
+}
+
+// Receive register the callback to handle packet received
+// the registration should be done before the simulation
 func (n *EndpointNode) Receive(callback React) {
 	n.callback = callback
 }
@@ -45,3 +61,5 @@ func (n *EndpointNode) Check() {
 	}
 	n.BasicNode.Check()
 }
+
+type PacketSupplier func() base.Packet
