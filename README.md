@@ -169,13 +169,22 @@ Data could be collected by callback function `node.OnTransferCallback()`. Also n
 
 #### Example
 
-Following is an example of a network with two entries, one endpoint and two chains.
+##### 1. Basic Example
+
+Source code of this example can be found at main/example.go
+
+Following is a basic example to show how to use the simulator, it's about a network with two entries, one endpoint and two chains.
 
 * Chain 1: entry1 -> channel1(with `30% packet loss rate`) -> restrict (`1 pps`, `1024 bps`, buffer limited to `4096 bytes` and `5 packets`) -> endpoint
 * Chain 2: entry2 -> channel2(with `10% packet loss rate`) -> endpoint
 
+<details>
+<summary>code of the basic example</summary>
+
 ```go
 package main
+
+// Example of how to use the simulator basically
 
 import (
 	"github.com/bytedance/ns-x/v2"
@@ -240,6 +249,165 @@ func main() {
 	defer network.Wait()
 }
 ```
+
+</details>
+
+##### 2. Echo Example
+
+Source code of this example can be found at main/echo.go
+
+Following is an example to show how to define a duplex network and set up an echo service, it's about an.
+
+<details>
+<summary>code of echo example</summary>
+
+```go
+package main
+
+// Example of a duplex network, where to endpoints echo to each other
+
+import (
+	"github.com/bytedance/ns-x/v2"
+	"github.com/bytedance/ns-x/v2/base"
+	"github.com/bytedance/ns-x/v2/math"
+	"github.com/bytedance/ns-x/v2/node"
+	"github.com/bytedance/ns-x/v2/tick"
+	"time"
+)
+
+func main() {
+	now := time.Now()
+	helper := ns_x.NewBuilder()
+	network, nodes := helper.
+		Chain().
+		NodeWithName("restrict 1", node.NewRestrictNode(node.WithBPSLimit(1024*1024, 4*1024*1024))).
+		NodeWithName("channel 1", node.NewChannelNode(node.WithDelay(math.NewFixedDelay(150*time.Millisecond)))).
+		Chain().
+		NodeWithName("restrict 2", node.NewRestrictNode(node.WithPPSLimit(10, 50))).
+		NodeWithName("channel 2", node.NewChannelNode(node.WithDelay(math.NewFixedDelay(200*time.Millisecond)))).
+		Chain().
+		NodeWithName("endpoint 1", node.NewEndpointNode()).
+		Group("restrict 1", "channel 1").
+		NodeWithName("endpoint 2", node.NewEndpointNode()).
+		Chain().
+		NodeOfName("endpoint 2").
+		Group("restrict 2", "channel 2").
+		NodeOfName("endpoint 1").
+		Summary().
+		Build()
+	endpoint1 := nodes["endpoint 1"].(*node.EndpointNode)
+	endpoint2 := nodes["endpoint 2"].(*node.EndpointNode)
+	endpoint1.Receive(func(packet base.Packet, now time.Time) []base.Event {
+		println("endpoint 1 receive:", string(packet.(base.RawPacket)), "at", now.String())
+		return base.Aggregate(endpoint1.Send(packet, now))
+	})
+	endpoint2.Receive(func(packet base.Packet, now time.Time) []base.Event {
+		println("endpoint 2 receive:", string(packet.(base.RawPacket)), "at", now.String())
+		return base.Aggregate(endpoint2.Send(packet, now))
+	})
+	network.Run([]base.Event{endpoint1.Send(base.RawPacket("hello world"), now)}, tick.NewStepClock(now, time.Second), 30*time.Second)
+	defer network.Wait()
+}
+```
+
+</details>
+
+##### 3. Route Example
+
+Source code of this example can be found at main/route.go
+
+Following is an advanced example to show how to customize route rules of the network.
+
+Suppose we have 1 client and 2 servers, route from client to server 1 has 200ms delay and no loss, route from client to server 2 has 300ms delay and no loss.
+
+We assign ip address "192.168.0.1" to server 1, "192.168.0.2" to server 2, ports are not used in this example, but obviously route rules based on ip+port is similar to which based on ip.
+
+This example only shows how to define route rules of a simplex network for simplicity, but it's easy to define route rules for duplex network.
+
+<details>
+<summary>code of the route example</summary>
+
+```go
+package main
+
+// Example for define custom route rule
+
+import (
+	"github.com/bytedance/ns-x/v2"
+	"github.com/bytedance/ns-x/v2/base"
+	"github.com/bytedance/ns-x/v2/math"
+	"github.com/bytedance/ns-x/v2/node"
+	"github.com/bytedance/ns-x/v2/tick"
+	"time"
+)
+
+func main() {
+	helper := ns_x.NewBuilder()
+	t := time.Now()
+	routeTable := make(map[base.Node]base.Node)
+	ipTable := make(map[string]base.Node)
+	scatter := node.NewScatterNode(node.WithRouteSelector(func(packet base.Packet, nodes []base.Node) base.Node {
+		if p, ok := packet.(*PacketWithNode); ok {
+			return routeTable[p.destination]
+		}
+		panic("no route to host")
+	}))
+	client := node.NewEndpointNode()
+	network, nodes := helper.
+		Chain().
+		Node(client).
+		Node(scatter).
+		NodeWithName("route1", node.NewChannelNode(node.WithDelay(math.NewFixedDelay(time.Millisecond*200)))).
+		NodeWithName("server1", node.NewEndpointNode()).
+		Chain().
+		Node(client).
+		Node(scatter).
+		NodeWithName("route2", node.NewChannelNode(node.WithDelay(math.NewFixedDelay(time.Millisecond*300)))).
+		NodeWithName("server2", node.NewEndpointNode()).
+		Build()
+	server1 := nodes["server1"].(*node.EndpointNode)
+	server2 := nodes["server2"].(*node.EndpointNode)
+	route1 := nodes["route1"]
+	route2 := nodes["route2"]
+	routeTable[server1] = route1
+	routeTable[server2] = route2
+	ipTable["192.168.0.1"] = server1
+	ipTable["192.168.0.2"] = server2
+	server1.Receive(react1) // server 1 should receive after 1-second send delay + 200 milliseconds channel delay
+	server2.Receive(react2) // server 2 should receive after 2-second send delay + 200 milliseconds channel delay
+	sender := createSender(client, ipTable)
+	events := make([]base.Event, 0)
+	events = append(events, sender(base.RawPacket([]byte{}), "192.168.0.1", t.Add(time.Second*1))) // send to server1 after 1 second
+	events = append(events, sender(base.RawPacket([]byte{}), "192.168.0.2", t.Add(time.Second*2))) // send to server2 after 2 second
+	network.Run(events, tick.NewStepClock(t, time.Millisecond), 300*time.Second)
+	defer network.Wait()
+}
+
+func react1(packet base.Packet, now time.Time) []base.Event {
+	println("server 1 receive at", now.String())
+	return nil
+}
+
+func react2(packet base.Packet, now time.Time) []base.Event {
+	println("server 2 receive at", now.String())
+	return nil
+}
+
+type PacketWithNode struct {
+	base.Packet
+	source, destination base.Node
+}
+
+type sender func(packet base.Packet, ip string, t time.Time) base.Event
+
+func createSender(client *node.EndpointNode, ipTable map[string]base.Node) sender {
+	return func(packet base.Packet, ip string, t time.Time) base.Event {
+		return client.Send(&PacketWithNode{packet, client, ipTable[ip]}, t)
+	}
+}
+```
+
+</details>
 
 ## Design
 

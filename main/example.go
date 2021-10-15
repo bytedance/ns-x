@@ -1,5 +1,7 @@
 package main
 
+// Example of how to use the simulator basically
+
 import (
 	"github.com/bytedance/ns-x/v2"
 	"github.com/bytedance/ns-x/v2/base"
