@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-func main() {
+func echo() {
 	now := time.Now()
 	helper := ns_x.NewBuilder()
 	network, nodes := helper.

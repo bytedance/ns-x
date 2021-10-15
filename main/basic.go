@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-func main() {
+func basic() {
 	source := rand.NewSource(0)
 	random := rand.New(source)
 	helper := ns_x.NewBuilder()

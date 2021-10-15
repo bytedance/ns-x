@@ -11,13 +11,13 @@ import (
 	"time"
 )
 
-func main() {
+func route() {
 	helper := ns_x.NewBuilder()
 	t := time.Now()
 	routeTable := make(map[base.Node]base.Node)
 	ipTable := make(map[string]base.Node)
 	scatter := node.NewScatterNode(node.WithRouteSelector(func(packet base.Packet, nodes []base.Node) base.Node {
-		if p, ok := packet.(*PacketWithNode); ok {
+		if p, ok := packet.(*packetWithNode); ok {
 			return routeTable[p.destination]
 		}
 		panic("no route to host")
@@ -63,7 +63,7 @@ func react2(packet base.Packet, now time.Time) []base.Event {
 	return nil
 }
 
-type PacketWithNode struct {
+type packetWithNode struct {
 	base.Packet
 	source, destination base.Node
 }
@@ -72,6 +72,6 @@ type sender func(packet base.Packet, ip string, t time.Time) base.Event
 
 func createSender(client *node.EndpointNode, ipTable map[string]base.Node) sender {
 	return func(packet base.Packet, ip string, t time.Time) base.Event {
-		return client.Send(&PacketWithNode{packet, client, ipTable[ip]}, t)
+		return client.Send(&packetWithNode{packet, client, ipTable[ip]}, t)
 	}
 }
