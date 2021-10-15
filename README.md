@@ -259,7 +259,7 @@ Source code of this example can be found at main/echo.go
 Following is an example to show how to define a duplex network and set up an echo service, it's about an.
 
 <details>
-<summary>code of echo example</summary>
+<summary>code of the echo example</summary>
 
 ```go
 package main
