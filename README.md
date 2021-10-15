@@ -171,7 +171,7 @@ Data could be collected by callback function `node.OnTransferCallback()`. Also n
 
 ##### 1. Basic Example
 
-Source code of this example can be found at main/example.go
+Source code of this example can be found at main/basic.go
 
 Following is a basic example to show how to use the simulator, it's about a network with two entries, one endpoint and two chains.
 
@@ -197,7 +197,7 @@ import (
 	"time"
 )
 
-func main() {
+func basic() {
 	source := rand.NewSource(0)
 	random := rand.New(source)
 	helper := ns_x.NewBuilder()
@@ -275,7 +275,7 @@ import (
 	"time"
 )
 
-func main() {
+func echo() {
 	now := time.Now()
 	helper := ns_x.NewBuilder()
 	network, nodes := helper.
@@ -330,7 +330,7 @@ This example only shows how to define route rules of a simplex network for simpl
 ```go
 package main
 
-// Example for define custom route rule
+// Example of how to customize route rule
 
 import (
 	"github.com/bytedance/ns-x/v2"
@@ -341,13 +341,13 @@ import (
 	"time"
 )
 
-func main() {
+func route() {
 	helper := ns_x.NewBuilder()
 	t := time.Now()
 	routeTable := make(map[base.Node]base.Node)
 	ipTable := make(map[string]base.Node)
 	scatter := node.NewScatterNode(node.WithRouteSelector(func(packet base.Packet, nodes []base.Node) base.Node {
-		if p, ok := packet.(*PacketWithNode); ok {
+		if p, ok := packet.(*packetWithNode); ok {
 			return routeTable[p.destination]
 		}
 		panic("no route to host")
@@ -393,7 +393,7 @@ func react2(packet base.Packet, now time.Time) []base.Event {
 	return nil
 }
 
-type PacketWithNode struct {
+type packetWithNode struct {
 	base.Packet
 	source, destination base.Node
 }
@@ -402,7 +402,7 @@ type sender func(packet base.Packet, ip string, t time.Time) base.Event
 
 func createSender(client *node.EndpointNode, ipTable map[string]base.Node) sender {
 	return func(packet base.Packet, ip string, t time.Time) base.Event {
-		return client.Send(&PacketWithNode{packet, client, ipTable[ip]}, t)
+		return client.Send(&packetWithNode{packet, client, ipTable[ip]}, t)
 	}
 }
 ```
