@@ -27,7 +27,7 @@ func NewRestrictNode(options ...Option) *RestrictNode {
 		queuePacketsLimit: -1,
 	}
 	apply(n, options...)
-	if n.ppsLimit <= 0 && n.bpsLimit <= 0 {
+	if n.ppsLimit < 0 && n.bpsLimit < 0 {
 		panic("a restrict node must be limited in pps/bps")
 	}
 	return n
