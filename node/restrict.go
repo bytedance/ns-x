@@ -76,6 +76,22 @@ func (n *RestrictNode) Check() {
 	}
 }
 
+// QueuePackets retrieve current count of packets in the queue
+func (n *RestrictNode) QueuePackets() int64 {
+	return n.queuePackets
+}
+
+// QueueBytes retrieve current size of packets in the queue
+func (n *RestrictNode) QueueBytes() int64 {
+	return n.queueBytes
+}
+
+// BusyTime retrieve the busy time of the node, it means next packet arrived will not be transferred until the busy time
+// the busy time may before current time, which means the node is available now
+func (n *RestrictNode) BusyTime() time.Time {
+	return n.busyTime
+}
+
 // WithPPSLimit create an option set/overwrite pps limit and queue limit in packets to nodes applied
 // once flow of the node calculated in packets/second reach pps limit, further packets will be put into the queue
 // once total count of packets in the queue reach the queue packets limit, further packets will be ignored
