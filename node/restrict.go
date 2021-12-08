@@ -34,6 +34,12 @@ func NewRestrictNode(options ...Option) *RestrictNode {
 }
 
 func (n *RestrictNode) Transfer(packet base.Packet, now time.Time) []base.Event {
+	if n.queuePacketsLimit >= 0 && n.queuePackets > n.queuePacketsLimit {
+		panic("queue is already overflow in packets")
+	}
+	if n.queueBytesLimit >= 0 && n.queueBytes > n.queueBytesLimit {
+		panic("queue is already overflow in bytes")
+	}
 	busy := false
 	t := now
 	if n.busyTime.After(now) {
@@ -51,18 +57,17 @@ func (n *RestrictNode) Transfer(packet base.Packet, now time.Time) []base.Event 
 	step := math.Max(1.0/n.ppsLimit, float64(packet.Size())/n.bpsLimit)
 	delta := time.Duration(step * float64(time.Second))
 	n.busyTime = t.Add(delta)
+	events := n.actualTransfer(packet, n, n.GetNext()[0], t)
 	if busy {
 		n.queueBytes += int64(packet.Size())
 		n.queuePackets++
-		return base.Aggregate(
-			base.NewFixedEvent(func(t time.Time) []base.Event {
-				n.queueBytes -= int64(packet.Size())
-				n.queuePackets--
-				return n.actualTransfer(packet, n, n.GetNext()[0], t)
-			}, t),
-		)
+		events = append(events, base.NewFixedEvent(func(t time.Time) []base.Event {
+			n.queueBytes -= int64(packet.Size())
+			n.queuePackets--
+			return nil
+		}, t))
 	}
-	return n.actualTransfer(packet, n, n.GetNext()[0], t)
+	return events
 }
 
 func (n *RestrictNode) Check() {
