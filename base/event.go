@@ -39,12 +39,8 @@ func (e *event) Action() Action {
 func (e *event) HookBefore(action Action) {
 	actualAction := e.action
 	e.action = func(t time.Time) (events []Event) {
-		for _, event := range action(t) {
-			events = append(events, event)
-		}
-		for _, event := range actualAction(t) {
-			events = append(events, event)
-		}
+		events = append(events, action(t)...)
+		events = append(events, actualAction(t)...)
 		return
 	}
 }
@@ -52,12 +48,8 @@ func (e *event) HookBefore(action Action) {
 func (e *event) HookAfter(action Action) {
 	actualAction := e.action
 	e.action = func(t time.Time) (events []Event) {
-		for _, event := range actualAction(t) {
-			events = append(events, event)
-		}
-		for _, event := range action(t) {
-			events = append(events, event)
-		}
+		events = append(events, actualAction(t)...)
+		events = append(events, action(t)...)
 		return
 	}
 }
